@@ -1,74 +1,56 @@
-/*
- * Technical Analysis Library for .NET
- * Copyright (c) 2020-2025 Anatolii Siryi
- *
- * This file is part of Technical Analysis Library for .NET.
- *
- * Technical Analysis Library for .NET is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Technical Analysis Library for .NET is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Technical Analysis Library for .NET. If not, see <https://www.gnu.org/licenses/>.
- */
+//Файл MAType.cs
 
 namespace TALib;
 
 public static partial class Core
 {
     /// <summary>
-    /// Defines the different types of moving averages.
+    /// Определяет различные типы скользящих средних.
     /// </summary>
     public enum MAType
     {
         /// <summary>
-        /// An unweighted, arithmetic mean.
+        /// Невзвешенное арифметическое среднее (SMA).
         /// </summary>
         Sma,
 
         /// <summary>
-        /// The standard exponential moving average, using a smoothing factor of 2/(n+1).
+        /// Стандартная экспоненциальная скользящая средняя (EMA), использующая коэффициент сглаживания 2/(n+1).
         /// </summary>
         Ema,
 
         /// <summary>
-        /// An exponential moving average, using a smoothing factor of 1/n and simple moving average as seeding.
+        /// Взвешенная экспоненциальная скользящая средняя (WMA), использующая коэффициент сглаживания 1/n и простую скользящую среднюю в качестве начального значения.
         /// </summary>
         Wma,
 
         /// <summary>
-        /// The double exponential moving average.
+        /// Двойная экспоненциальная скользящая средняя (DEMA).
         /// </summary>
         Dema,
 
         /// <summary>
-        /// The triple exponential moving average.
+        /// Тройная экспоненциальная скользящая средняя (TEMA).
         /// </summary>
         Tema,
 
         /// <summary>
-        /// The triangular moving average.
+        /// Треугольная скользящая средняя (TRIMA).
         /// </summary>
         Trima,
 
         /// <summary>
-        /// The Kaufman Adaptive Moving Average.
+        /// Адаптивная скользящая средняя Кауфмана (KAMA).
         /// </summary>
         Kama,
 
         /// <summary>
-        /// The MESA Adaptive Moving Average.
+        /// Адаптивная скользящая средняя MESA (MAMA).
         /// </summary>
         Mama,
 
         /// <summary>
-        /// The triple generalized double exponential moving average.
+        /// Утроенная обобщённая двойная экспоненциальная скользящая средняя (T3).
         /// </summary>
         T3
     }

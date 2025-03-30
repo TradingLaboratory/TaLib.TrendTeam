@@ -1,40 +1,31 @@
-/*
- * Technical Analysis Library for .NET
- * Copyright (c) 2020-2025 Anatolii Siryi
- *
- * This file is part of Technical Analysis Library for .NET.
- *
- * Technical Analysis Library for .NET is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Technical Analysis Library for .NET is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Technical Analysis Library for .NET. If not, see <https://www.gnu.org/licenses/>.
- */
+//файл: CompatibilityMode.cs
 
 namespace TALib;
 
 public static partial class Core
 {
     /// <summary>
-    /// Types of compatibility modes.
+    /// Типы режимов совместимости для работы с различными платформами и инструментами.
     /// </summary>
+    /// <remarks>
+    /// Режимы совместимости позволяют адаптировать расчеты индикаторов 
+    /// под специфические требования сторонних приложений.
+    /// </remarks>
     public enum CompatibilityMode
     {
         /// <summary>
-        /// No compatibility.
+        /// Стандартный режим работы библиотеки без дополнительных настроек совместимости.
         /// </summary>
         Default,
 
         /// <summary>
-        /// Compatibility with MetaStock charting software
+        /// Режим совместимости с программным обеспечением MetaStock.
         /// </summary>
+        /// <remarks>
+        /// Используется для корректной работы с формулами и индикаторами, 
+        /// разработанными для платформы MetaStock. Может влиять на расчет 
+        /// скользящих средних, осцилляторов и других технических индикаторов.
+        /// </remarks>
         Metastock
     }
 }

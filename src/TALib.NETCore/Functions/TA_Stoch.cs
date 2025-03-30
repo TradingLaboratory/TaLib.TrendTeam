@@ -1,127 +1,64 @@
-/*
- * Technical Analysis Library for .NET
- * Copyright (c) 2020-2025 Anatolii Siryi
- *
- * This file is part of Technical Analysis Library for .NET.
- *
- * Technical Analysis Library for .NET is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Technical Analysis Library for .NET is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Technical Analysis Library for .NET. If not, see <https://www.gnu.org/licenses/>.
- */
-
+// файл TA_Stoch.cs
 namespace TALib;
-
 public static partial class Functions
 {
     /// <summary>
-    /// Stochastic (Momentum Indicators)
+    /// Стохастический осциллятор (индикаторы импульса)
     /// </summary>
-    /// <param name="inHigh">A span of input high prices.</param>
-    /// <param name="inLow">A span of input low prices.</param>
-    /// <param name="inClose">A span of input close prices.</param>
-    /// <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-    /// <param name="outSlowK">A span to store the calculated %K line values.</param>
-    /// <param name="outSlowD">A span to store the calculated %D line values.</param>
-    /// <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-    /// <param name="optInFastKPeriod">The time period for calculating the Fast %K line.</param>
-    /// <param name="optInSlowKPeriod">The time period for smoothing the Fast %K line into the Slow %K line.</param>
-    /// <param name="optInSlowKMAType">The moving average type used for smoothing the Fast %K line.</param>
-    /// <param name="optInSlowDPeriod">The time period for calculating the Slow %D line.</param>
-    /// <param name="optInSlowDMAType">The moving average type used for smoothing the Slow %D line.</param>
-    /// <typeparam name="T">
-    /// The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-    /// implementing the <see cref="IFloatingPointIeee754{T}"/> interface.
-    /// </typeparam>
-    /// <returns>
-    /// A <see cref="Core.RetCode"/> value indicating the success or failure of the calculation.
-    /// Returns <see cref="Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-    /// </returns>
+    /// <param name="inHigh">Массив входных цен High (максимумы).</param>
+    /// <param name="inLow">Массив входных цен Low (минимумы).</param>
+    /// <param name="inClose">Массив входных цен Close (закрытия).</param>
+    /// <param name="inRange">Диапазон индексов для вычислений во входных данных.</param>
+    /// <param name="outSlowK">Массив для сохранения значений линии %K (медленной).</param>
+    /// <param name="outSlowD">Массив для сохранения значений линии %D (медленной).</param>
+    /// <param name="outRange">Диапазон индексов с валидными данными в выходных массивах.</param>
+    /// <param name="optInFastKPeriod">Период для расчета быстрой линии %K.</param>
+    /// <param name="optInSlowKPeriod">Период сглаживания для преобразования Fast %K в Slow %K.</param>
+    /// <param name="optInSlowKMAType">Тип скользящей средней для сглаживания Fast %K.</param>
+    /// <param name="optInSlowDPeriod">Период для расчета линии %D.</param>
+    /// <param name="optInSlowDMAType">Тип скользящей средней для сглаживания Slow %K.</param>
+    /// <typeparam name="T">Числовой тип данных (float/double).</typeparam>
+    /// <returns>Код результата выполнения (<see cref="Core.RetCode"/>).</returns>
     /// <remarks>
-    /// Stochastic Oscillator is a momentum indicator used in technical analysis to determine the relative position of the
-    /// closing price within a defined range over a given number of periods. It helps identify overbought/oversold conditions
-    /// and potential reversals.
+    /// Стохастический осциллятор определяет положение цены закрытия относительно ценового диапазона за указанный период. 
+    /// Позволяет идентифицировать условия перекупленности/перепроданности и потенциальные развороты.
     /// <para>
-    /// The indicator consists of two lines:
-    /// <c>%K</c>, the raw Stochastic, and <c>%D</c>, the signal line derived from %K via smoothing. This function implements
-    /// the "slow" version of the Stochastic Oscillator, which applies additional smoothing to %K before calculating %D.
-    /// <paramref name="optInFastKPeriod"/> parameter controls the period for calculating the raw %K line.
-    /// <paramref name="optInSlowKPeriod"/> and <paramref name="optInSlowKMAType"/> parameters control the smoothing of the %K line.
-    /// <paramref name="optInSlowDPeriod"/> and <paramref name="optInSlowDMAType"/> parameters control the smoothing of the %D line.
+    /// Индикатор состоит из двух линий:
+    /// <c>%K</c> (сырой стохастик) и <c>%D</c> (сигнальная линия). 
+    /// Реализована "медленная" версия осциллятора с дополнительным сглаживанием.
     /// </para>
     ///
-    /// <b>Calculation steps</b>:
+    /// <b>Этапы расчета</b>:
     /// <list type="number">
     ///   <item>
     ///     <description>
-    ///       Calculate the raw %K value for each period:
+    ///       Расчет сырого значения %K:
     ///       <code>
     ///         %K = 100 * ((Close - LowestLow) / (HighestHigh - LowestLow))
     ///       </code>
-    ///       where:
+    ///       где:
     ///       <list type="bullet">
-    ///         <item>
-    ///           <description>
-    ///             <b>Close</b> is the closing price of the current period.
-    ///           </description>
-    ///         </item>
-    ///         <item>
-    ///           <description>
-    ///             <b>LowestLow</b> is the lowest low over the Fast %K period.
-    ///           </description>
-    ///         </item>
-    ///         <item>
-    ///           <description>
-    ///             <b>HighestHigh</b> is the highest high over the Fast %K period.
-    ///           </description>
-    ///         </item>
+    ///         <item><description><b>Close</b> - цена закрытия текущего периода</description></item>
+    ///         <item><description><b>LowestLow</b> - минимальный минимум за период Fast %K</description></item>
+    ///         <item><description><b>HighestHigh</b> - максимальный максимум за период Fast %K</description></item>
     ///       </list>
     ///     </description>
     ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       Smooth %K over the Slow %K period using the specified moving average type to produce the Slow %K line.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       Smooth the Slow %K line over the Slow %D period using the specified moving average type to produce the Slow %D line.
-    ///     </description>
-    ///   </item>
+    ///   <item><description>Сглаживание %K за период Slow %K с использованием выбранного типа MA</description></item>
+    ///   <item><description>Сглаживание Slow %K за период Slow %D с использованием выбранного типа MA</description></item>
     /// </list>
     ///
-    /// <b>Value interpretation</b>:
+    /// <b>Интерпретация значений</b>:
     /// <list type="bullet">
-    ///   <item>
-    ///     <description>
-    ///       Values above 80 typically indicate overbought conditions, suggesting a potential reversal to the downside.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       Values below 20 typically indicate oversold conditions, suggesting a potential reversal to the upside.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       Crossovers between the %K and %D lines are often used as trading signals:
-    ///       - A %K line crossing above %D may signal a buy.
-    ///       - A %K line crossing below %D may signal a sell.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       A divergence between the Stochastic Oscillator and the price may indicate weakening momentum and a potential trend reversal.
-    ///     </description>
-    ///   </item>
+    ///   <item><description>Значения выше 80: зона перекупленности (потенциальный разворот вниз)</description></item>
+    ///   <item><description>Значения ниже 20: зона перепроданности (потенциальный рост)</description></item>
+    ///   <item><description>Пересечения %K и %D: 
+    ///     <list type="bullet">
+    ///       <item><description>%K ↑ выше %D - возможный сигнал на покупку</description></item>
+    ///       <item><description>%K ↓ ниже %D - возможный сигнал на продажу</description></item>
+    ///     </list>
+    ///   </description></item>
+    ///   <item><description>Дивергенция между осциллятором и ценой указывает на ослабление тренда</description></item>
     /// </list>
     /// </remarks>
     [PublicAPI]
@@ -142,14 +79,9 @@ public static partial class Functions
             optInSlowDPeriod, optInSlowDMAType);
 
     /// <summary>
-    /// Returns the lookback period for <see cref="Stoch{T}">Stoch</see>.
+    /// Возвращает период "просмотра назад" для функции <see cref="Stoch{T}"/>.
     /// </summary>
-    /// <param name="optInFastKPeriod">The time period for calculating the Fast %K line.</param>
-    /// <param name="optInSlowKPeriod">The time period for smoothing the Fast %K line into the Slow %K line.</param>
-    /// <param name="optInSlowKMAType">The moving average type used for smoothing the Fast %K line.</param>
-    /// <param name="optInSlowDPeriod">The time period for calculating the Slow %D line.</param>
-    /// <param name="optInSlowDMAType">The moving average type used for smoothing the Slow %D line.</param>
-    /// <returns>The number of periods required before the first output value can be calculated.</returns>
+    /// <returns>Количество периодов, необходимых для первого расчета.</returns>
     [PublicAPI]
     public static int StochLookback(
         int optInFastKPeriod = 5,
@@ -162,34 +94,13 @@ public static partial class Functions
         {
             return -1;
         }
-
         var retValue = optInFastKPeriod - 1;
         retValue += MaLookback(optInSlowKPeriod, optInSlowKMAType);
         retValue += MaLookback(optInSlowDPeriod, optInSlowDMAType);
-
         return retValue;
     }
 
-    /// <remarks>
-    /// For compatibility with abstract API
-    /// </remarks>
-    [UsedImplicitly]
-    private static Core.RetCode Stoch<T>(
-        T[] inHigh,
-        T[] inLow,
-        T[] inClose,
-        Range inRange,
-        T[] outSlowK,
-        T[] outSlowD,
-        out Range outRange,
-        int optInFastKPeriod = 5,
-        int optInSlowKPeriod = 3,
-        Core.MAType optInSlowKMAType = Core.MAType.Sma,
-        int optInSlowDPeriod = 3,
-        Core.MAType optInSlowDMAType = Core.MAType.Sma) where T : IFloatingPointIeee754<T> =>
-        StochImpl<T>(inHigh, inLow, inClose, inRange, outSlowK, outSlowD, out outRange, optInFastKPeriod, optInSlowKPeriod,
-            optInSlowKMAType, optInSlowDPeriod, optInSlowDMAType);
-
+    // Реализация метода
     private static Core.RetCode StochImpl<T>(
         ReadOnlySpan<T> inHigh,
         ReadOnlySpan<T> inLow,
@@ -205,77 +116,37 @@ public static partial class Functions
         Core.MAType optInSlowDMAType) where T : IFloatingPointIeee754<T>
     {
         outRange = Range.EndAt(0);
-
         if (FunctionHelpers.ValidateInputRange(inRange, inHigh.Length, inLow.Length, inClose.Length) is not { } rangeIndices)
         {
             return Core.RetCode.OutOfRangeParam;
         }
-
         var (startIdx, endIdx) = rangeIndices;
-
         if (optInFastKPeriod < 1 || optInSlowKPeriod < 1 || optInSlowDPeriod < 1)
         {
             return Core.RetCode.BadParam;
         }
 
-        /* With stochastic, there is a total of 4 different lines that are defined: FastK, FastD, SlowK and SlowD.
+        /* В стохастике определяются 4 линии:
+         *   FastK, FastD, SlowK и SlowD
          *
-         * The D is the signal line usually drawn over its corresponding K function.
-         *
-         *                     (Today's Close - LowestLow)
-         *   FastK(Kperiod) =  ─────────────────────────── * 100
-         *                      (HighestHigh - LowestLow)
-         *
-         *   FastD(FastDperiod, MA type) = MA Smoothed FastK over FastDperiod
-         *
-         *   SlowK(SlowKperiod, MA type) = MA Smoothed FastK over SlowKperiod
-         *
-         *   SlowD(SlowDperiod, MA Type) = MA Smoothed SlowK over SlowDperiod
-         *
-         * The HighestHigh and LowestLow are the extreme values among the last 'Kperiod'.
-         *
-         * SlowK and FastD are equivalent when using the same period.
-         *
-         * The following shows how these four lines are made available in the library:
-         *
-         *   Stoch  : Returns the SlowK and SlowD
-         *   StochF : Returns the FastK and FastD
-         *
-         * The Stoch function correspond to the more widely implemented version found in much software/charting package.
-         * The StochF is more rarely used because its higher volatility cause often whipsaws.
+         *   FastK(Kperiod) = 100*(Close - LowestLow)/(HighestHigh - LowestLow)
+         *   FastD = Скользящая средняя FastK за FastDperiod
+         *   SlowK = Скользящая средняя FastK за SlowKperiod
+         *   SlowD = Скользящая средняя SlowK за SlowDperiod
          */
-
         var lookbackK = optInFastKPeriod - 1;
         var lookbackDSlow = MaLookback(optInSlowDPeriod, optInSlowDMAType);
         var lookbackTotal = StochLookback(optInFastKPeriod, optInSlowKPeriod, optInSlowKMAType, optInSlowDPeriod, optInSlowDMAType);
         startIdx = Math.Max(startIdx, lookbackTotal);
-
         if (startIdx > endIdx)
         {
             return Core.RetCode.Success;
         }
 
-        /* Do the K calculation:
-         *
-         *   Kt = 100 * ((Ct - Lt) / (Ht - Lt))
-         *
-         * Kt is today stochastic
-         * Ct is today closing price.
-         * Lt is the lowest price of the last K Period (including today)
-         * Ht is the highest price of the last K Period (including today)
-         */
-
-        // Proceed with the calculation for the requested range.
-        // The algorithm allows the input and output to be the same buffer.
         var outIdx = 0;
-
-        // Calculate just enough K for ending up with the caller requested range.
-        // (The range of k must consider all the lookback involve with the smoothing).
         var trailingIdx = startIdx - lookbackTotal;
         var today = trailingIdx + lookbackK;
 
-        // Allocate a temporary buffer large enough to store the K.
-        // If the output is the same as the input, just save one memory allocation.
         Span<T> tempBuffer;
         if (outSlowK == inHigh || outSlowK == inLow || outSlowK == inClose)
         {
@@ -290,52 +161,35 @@ public static partial class Functions
             tempBuffer = new T[endIdx - today + 1];
         }
 
-        // Do the K calculation
         int highestIdx = -1, lowestIdx = -1;
         T highest = T.Zero, lowest = T.Zero;
         while (today <= endIdx)
         {
             (lowestIdx, lowest) = FunctionHelpers.CalcLowest(inLow, trailingIdx, today, lowestIdx, lowest);
             (highestIdx, highest) = FunctionHelpers.CalcHighest(inHigh, trailingIdx, today, highestIdx, highest);
-
             var diff = (highest - lowest) / FunctionHelpers.Hundred<T>();
-
-            // Calculate stochastic.
             tempBuffer[outIdx++] = !T.IsZero(diff) ? (inClose[today] - lowest) / diff : T.Zero;
-
             trailingIdx++;
             today++;
         }
 
-        /* Un-smoothed K calculation completed. This K calculation is not returned to the caller.
-         * It is always smoothed and then return.
-         * Some documentation will refer to the smoothed version as being "K-Slow", but often this end up to be shortened to "K".
-         */
         var retCode = MaImpl(tempBuffer, Range.EndAt(outIdx - 1), tempBuffer, out outRange, optInSlowKPeriod, optInSlowKMAType);
         if (retCode != Core.RetCode.Success || outRange.End.Value == 0)
         {
             return retCode;
         }
-
         var nbElement = outRange.End.Value - outRange.Start.Value;
-        // Calculate the %D which is simply a moving average of the already smoothed %K.
+
         retCode = MaImpl(tempBuffer, Range.EndAt(nbElement - 1), outSlowD, out outRange, optInSlowDPeriod, optInSlowDMAType);
         nbElement = outRange.End.Value - outRange.Start.Value;
 
-        /* Copy tempBuffer into the caller buffer.
-         * (Calculation could not be done directly in the caller buffer because
-         * more input data than the requested range was needed for doing %D).
-         */
         tempBuffer.Slice(lookbackDSlow, nbElement).CopyTo(outSlowK);
         if (retCode != Core.RetCode.Success)
         {
             outRange = Range.EndAt(0);
-
             return retCode;
         }
-
         outRange = new Range(startIdx, startIdx + nbElement);
-
         return Core.RetCode.Success;
     }
 }

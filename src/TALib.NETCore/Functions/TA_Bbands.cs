@@ -1,128 +1,114 @@
-/*
- * Technical Analysis Library for .NET
- * Copyright (c) 2020-2025 Anatolii Siryi
- *
- * This file is part of Technical Analysis Library for .NET.
- *
- * Technical Analysis Library for .NET is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Technical Analysis Library for .NET is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Technical Analysis Library for .NET. If not, see <https://www.gnu.org/licenses/>.
- */
-
+//Файл TA_Bbands.cs
 namespace TALib;
-
 public static partial class Functions
 {
     /// <summary>
-    /// Bollinger Bands (Overlap Studies)
+    /// Полосы Боллинджера (Скользящие исследования)
     /// </summary>
-    /// <param name="inReal">A span of input values.</param>
-    /// <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-    /// <param name="outRealUpperBand">A span to store the calculated upper band values.</param>
-    /// <param name="outRealMiddleBand">A span to store the calculated middle band values.</param>
-    /// <param name="outRealLowerBand">A span to store the calculated lower band values.</param>
-    /// <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-    /// <param name="optInTimePeriod">The time period.</param>
+    /// <param name="inReal">Набор входных значений.</param>
+    /// <param name="inRange">Диапазон индексов, определяющий часть данных для расчета во входном наборе.</param>
+    /// <param name="outRealUpperBand">Массив для сохранения рассчитанных значений верхней полосы.</param>
+    /// <param name="outRealMiddleBand">Массив для сохранения рассчитанных значений средней полосы.</param>
+    /// <param name="outRealLowerBand">Массив для сохранения рассчитанных значений нижней полосы.</param>
+    /// <param name="outRange">Диапазон индексов с валидными данными в выходных массивах.</param>
+    /// <param name="optInTimePeriod">Период расчета.</param>
     /// <param name="optInNbDevUp">
-    /// Multiplier for the standard deviation to calculate the upper band:
+    /// Множитель стандартного отклонения для верхней полосы:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///       Higher values increase the distance from the middle band, reducing sensitivity to minor price fluctuations.
+    ///       Большие значения увеличивают расстояние от средней полосы, снижая чувствительность к незначительным колебаниям цены.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Lower values reduce the distance, increasing responsiveness to price changes.
+    ///       Меньшие значения сокращают расстояние, повышая реакцию на изменения цены.
     ///     </description>
     ///   </item>
     /// </list>
     /// <para>
-    /// Values above 5 are rarely used as they lose practical significance.
+    /// Значения выше 5 редко используются из-за потери практической значимости.
     /// </para>
     /// </param>
     /// <param name="optInNbDevDn">
-    /// Multiplier for the standard deviation to calculate the lower band:
+    /// Множитель стандартного отклонения для нижней полосы:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///       Higher values increase the distance from the middle band, reducing the likelihood of oversold signals.
+    ///       Большие значения увеличивают расстояние от средней полосы, снижая вероятность сигналов перепроданности.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Lower values reduce the distance, increasing sensitivity to price declines.
+    ///       Меньшие значения сокращают расстояние, повышая чувствительность к снижению цены.
     ///     </description>
     ///   </item>
     /// </list>
     /// <para>
-    /// Values above 5 are rarely used as they lose practical significance.
+    /// Значения выше 5 редко используются из-за потери практической значимости.
     /// </para>
     /// </param>
-    /// <param name="optInMAType">The moving average type.</param>
+    /// <param name="optInMAType">Тип скользящей средней.</param>
     /// <typeparam name="T">
-    /// The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-    /// implementing the <see cref="IFloatingPointIeee754{T}"/> interface.
+    /// Числовой тип данных (обычно <see langword="float"/> или <see langword="double"/>),
+    /// реализующий интерфейс <see cref="IFloatingPointIeee754{T}"/>.
     /// </typeparam>
     /// <returns>
-    /// A <see cref="Core.RetCode"/> value indicating the success or failure of the calculation.
-    /// Returns <see cref="Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+    /// Код результата <see cref="Core.RetCode"/>.
+    /// Возвращает <see cref="Core.RetCode.Success"/> при успешном расчете или код ошибки.
     /// </returns>
     /// <remarks>
-    /// Bollinger Bands are a volatility-based indicator that uses a moving average and standard deviations
-    /// to form upper and lower "bands" around the price. These bands expand and contract with market volatility,
-    /// providing insights into potential overbought or oversold conditions, as well as periods of consolidation and breakout.
+    /// Полосы Боллинджера — индикатор на основе волатильности, использующий скользящую среднюю и стандартные отклонения
+    /// для формирования верхней и нижней "полос" вокруг цены. Полосы расширяются/сужаются при изменении волатильности,
+    /// предоставляя информацию о потенциальных зонах перекупленности/перепроданности, периодах консолидации и прорывах.
     /// <para>
-    /// The function is often used in trading strategies for identifying breakout opportunities, trend continuation, or reversals.
+    /// Используется в торговых стратегиях для идентификации возможностей прорыва, продолжения тренда или разворота.
     /// </para>
     ///
-    /// <b>Calculation steps</b>:
+    /// <b>Этапы расчета</b>:
     /// <list type="number">
     ///   <item>
     ///     <description>
-    ///       Calculate the middle band as a moving average of the input values over the specified time period.
+    ///       Средняя полоса = скользящая средняя входных значений за указанный период.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Compute the standard deviation of the input values over the same time period.
+    ///       Стандартное отклонение входных значений за тот же период.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Determine the upper and lower bands by adding/subtracting a multiple of the standard deviation to/from the middle band:
+    ///       Верхняя/нижняя полосы рассчитываются по формулам:
     /// <code>
     /// Upper Band = Middle Band + (Standard Deviation * NbDevUp)
     /// Lower Band = Middle Band - (Standard Deviation * NbDevDn)
     /// </code>
+    ///       <para>Где:</para>
+    ///       <list type="bullet">
+    ///         <item><description>Middle Band — средняя полоса (скользящая средняя)</description></item>
+    ///         <item><description>Standard Deviation — стандартное отклонение</description></item>
+    ///         <item><description>NbDevUp/NbDevDn — множители для верхней/нижней полос</description></item>
+    ///       </list>
     ///     </description>
     ///   </item>
     /// </list>
     ///
-    /// <b>Value Interpretation</b>:
+    /// <b>Интерпретация значений</b>:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///       When prices move close to the upper band, the market may be approaching overbought levels, potentially signaling a retracement.
+    ///       Приближение цены к верхней полосе указывает на возможную перекупленность (риск коррекции).
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       When prices move close to the lower band, the market may be approaching oversold levels, potentially signaling a rally.
+    ///       Приближение цены к нижней полосе указывает на возможную перепроданность (потенциал роста).
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       During periods of low volatility, the bands contract, indicating potential breakouts. During high volatility, the bands expand.
+    ///       Сужение полос (низкая волатильность) предшествует прорывам. Расширение (высокая волатильность) — подтверждает тренд.
     ///     </description>
     ///   </item>
     /// </list>
@@ -143,17 +129,17 @@ public static partial class Functions
             optInNbDevDn, optInMAType);
 
     /// <summary>
-    /// Returns the lookback period for <see cref="Bbands{T}">Bbands</see>.
+    /// Возвращает lookback-период для <see cref="Bbands{T}"/>.
     /// </summary>
-    /// <param name="optInTimePeriod">The time period.</param>
-    /// <param name="optInMAType">The moving average type.</param>
-    /// <returns>The number of periods required before the first output value can be calculated.</returns>
+    /// <param name="optInTimePeriod">Период расчета.</param>
+    /// <param name="optInMAType">Тип скользящей средней.</param>
+    /// <returns>Количество периодов, необходимых для расчета первого валидного значения.</returns>
     [PublicAPI]
     public static int BbandsLookback(int optInTimePeriod = 5, Core.MAType optInMAType = Core.MAType.Sma) =>
         optInTimePeriod < 2 ? -1 : MaLookback(optInTimePeriod, optInMAType);
 
     /// <remarks>
-    /// For compatibility with abstract API
+    /// Для совместимости с абстрактным API
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode Bbands<T>(
@@ -183,27 +169,19 @@ public static partial class Functions
         Core.MAType optInMAType) where T : IFloatingPointIeee754<T>
     {
         outRange = Range.EndAt(0);
-
         if (FunctionHelpers.ValidateInputRange(inRange, inReal.Length) is not { } rangeIndices)
         {
             return Core.RetCode.OutOfRangeParam;
         }
-
         var (_, endIdx) = rangeIndices;
-
         if (optInTimePeriod < 2 || optInNbDevUp < 0 || optInNbDevDn < 0)
         {
             return Core.RetCode.BadParam;
         }
 
-        /* Identify two temporary buffers among the outputs.
-         * These temporary buffers allows to perform the calculation without any memory allocation.
-         * Whenever possible, make the tempBuffer1 be the middle band output. This will save one copy operation.
-         */
-
+        // Определение двух временных буферов для оптимизации памяти
         Span<T> tempBuffer1 = outRealMiddleBand;
         Span<T> tempBuffer2;
-
         if (inReal == outRealUpperBand)
         {
             tempBuffer2 = outRealLowerBand;
@@ -211,21 +189,19 @@ public static partial class Functions
         else
         {
             tempBuffer2 = outRealUpperBand;
-
             if (inReal == outRealMiddleBand)
             {
                 tempBuffer1 = outRealLowerBand;
             }
         }
 
-        // Check that the caller is not doing tricky things (like using the input buffer in two output)
+        // Проверка на наложение входных/выходных буферов
         if (tempBuffer1 == inReal || tempBuffer2 == inReal)
         {
             return Core.RetCode.BadParam;
         }
 
-        // Calculate the middle band, which is a moving average.
-        // The other two bands will simply add/subtract the standard deviation from this middle band.
+        // Расчет средней полосы (скользящая средняя)
         var retCode = MaImpl(inReal, inRange, tempBuffer1, out outRange, optInTimePeriod, optInMAType);
         if (retCode != Core.RetCode.Success || outRange.End.Value == 0)
         {
@@ -233,24 +209,24 @@ public static partial class Functions
         }
 
         var nbElement = outRange.End.Value - outRange.Start.Value;
+
+        // Оптимизация для SMA: повторное использование расчетов
         if (optInMAType == Core.MAType.Sma)
         {
-            // A small speed optimization by re-using the already calculated SMA.
             CalcStandardDeviation(inReal, tempBuffer1, outRange, tempBuffer2, optInTimePeriod);
         }
         else
         {
-            // Calculate the Standard Deviation
+            // Расчет стандартного отклонения для других типов MA
             retCode = StdDevImpl(inReal, new Range(outRange.Start.Value, endIdx), tempBuffer2, out outRange, optInTimePeriod, 1.0);
             if (retCode != Core.RetCode.Success)
             {
                 outRange = Range.EndAt(0);
-
                 return retCode;
             }
         }
 
-        // Copy the MA calculation into the middle band output, unless the calculation was done into it already
+        // Копирование MA в среднюю полосу (если буферы различаются)
         if (tempBuffer1 != outRealMiddleBand)
         {
             tempBuffer1[..nbElement].CopyTo(outRealMiddleBand);
@@ -259,11 +235,7 @@ public static partial class Functions
         var nbDevUp = T.CreateChecked(optInNbDevUp);
         var nbDevDn = T.CreateChecked(optInNbDevDn);
 
-        /* Do a tight loop to calculate the upper/lower band at the same time.
-         *
-         * All the following 5 loops are doing the same,
-         * except there is an attempt to speed optimize by eliminating unneeded multiplication.
-         */
+        // Расчет верхней/нижней полос в зависимости от множителей
         if (optInNbDevUp.Equals(optInNbDevDn))
         {
             CalcEqualBands(tempBuffer2, outRealMiddleBand, outRealUpperBand, outRealLowerBand, nbElement, nbDevUp);
@@ -286,6 +258,8 @@ public static partial class Functions
         var startSum = movAvgRange.Start.Value + 1 - optInTimePeriod;
         var endSum = movAvgRange.Start.Value;
         var periodTotal2 = T.Zero;
+
+        // Начальная сумма квадратов для первого расчета
         for (var outIdx = startSum; outIdx < endSum; outIdx++)
         {
             var tempReal = real[outIdx];
@@ -299,8 +273,9 @@ public static partial class Functions
             var tempReal = real[endSum];
             tempReal *= tempReal;
             periodTotal2 += tempReal;
-            var meanValue2 = periodTotal2 / timePeriod;
 
+            // Среднее квадратов минус квадрат среднего (дисперсия)
+            var meanValue2 = periodTotal2 / timePeriod;
             tempReal = real[startSum];
             tempReal *= tempReal;
             periodTotal2 -= tempReal;
@@ -309,6 +284,7 @@ public static partial class Functions
             tempReal *= tempReal;
             meanValue2 -= tempReal;
 
+            // Квадратный корень дисперсии = стандартное отклонение
             outReal[outIdx] = meanValue2 > T.Zero ? T.Sqrt(meanValue2) : T.Zero;
         }
     }
@@ -323,7 +299,7 @@ public static partial class Functions
     {
         if (nbDevUp.Equals(T.One))
         {
-            // No standard deviation multiplier needed.
+            // Прямое сложение/вычитание стандартного отклонения
             for (var i = 0; i < nbElement; i++)
             {
                 var tempReal = tempBuffer[i];
@@ -334,7 +310,7 @@ public static partial class Functions
         }
         else
         {
-            // Upper/lower band use the same standard deviation multiplier.
+            // Умножение стандартного отклонения на общий множитель
             for (var i = 0; i < nbElement; i++)
             {
                 var tempReal = tempBuffer[i] * nbDevUp;
@@ -356,7 +332,7 @@ public static partial class Functions
     {
         if (nbDevUp.Equals(T.One))
         {
-            // Only lower band has a standard deviation multiplier.
+            // Только нижняя полоса использует множитель
             for (var i = 0; i < nbElement; i++)
             {
                 var tempReal = tempBuffer[i];
@@ -367,7 +343,7 @@ public static partial class Functions
         }
         else if (nbDevDn.Equals(T.One))
         {
-            // Only upper band has a standard deviation multiplier.
+            // Только верхняя полоса использует множитель
             for (var i = 0; i < nbElement; i++)
             {
                 var tempReal = tempBuffer[i];
@@ -378,7 +354,7 @@ public static partial class Functions
         }
         else
         {
-            // Upper/lower band have distinctive standard deviation multiplier.
+            // Раздельные множители для верхней и нижней полос
             for (var i = 0; i < nbElement; i++)
             {
                 var tempReal = tempBuffer[i];

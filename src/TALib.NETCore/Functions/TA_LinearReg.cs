@@ -1,104 +1,66 @@
-/*
- * Technical Analysis Library for .NET
- * Copyright (c) 2020-2025 Anatolii Siryi
- *
- * This file is part of Technical Analysis Library for .NET.
- *
- * Technical Analysis Library for .NET is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Technical Analysis Library for .NET is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Technical Analysis Library for .NET. If not, see <https://www.gnu.org/licenses/>.
- */
-
 namespace TALib;
 
 public static partial class Functions
 {
     /// <summary>
-    /// Linear Regression (Statistic Functions)
+    /// Линейная регрессия (статистические функции)
     /// </summary>
-    /// <param name="inReal">A span of input values.</param>
-    /// <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-    /// <param name="outReal">A span to store the calculated values.</param>
-    /// <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-    /// <param name="optInTimePeriod">The time period.</param>
+    /// <param name="inReal">Массив входных значений для анализа.</param>
+    /// <param name="inRange">Диапазон индексов, определяющий участок данных для расчета.</param>
+    /// <param name="outReal">Массив для сохранения результатов расчета.</param>
+    /// <param name="outRange">Диапазон индексов с валидными данными в выходном массиве.</param>
+    /// <param name="optInTimePeriod">Период расчета (по умолчанию 14).</param>
     /// <typeparam name="T">
-    /// The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-    /// implementing the <see cref="IFloatingPointIeee754{T}"/> interface.
+    /// Числовой тип данных (например, float или double),
+    /// реализующий интерфейс <see cref="IFloatingPointIeee754{T}"/>.
     /// </typeparam>
     /// <returns>
-    /// A <see cref="Core.RetCode"/> value indicating the success or failure of the calculation.
-    /// Returns <see cref="Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+    /// Код возврата <see cref="Core.RetCode"/>:
+    /// <see cref="Core.RetCode.Success"/> при успешном расчете,
+    /// иначе код ошибки.
     /// </returns>
     /// <remarks>
-    /// Linear Regression function calculates the best-fit line for the input values over a specified period.
-    /// It uses the least squares method to minimize the distance between the data points and the calculated line.
+    /// Функция строит линию тренда методом наименьших квадратов для заданного периода.
     /// <para>
-    /// The output represents the y-value of the line at the last index of the period, which can be used to identify trends
-    /// and predict future values.
+    /// Результат показывает прогнозируемое значение на последнем баре периода,
+    /// что помогает определить направление тренда.
     /// </para>
     ///
-    /// <b>Calculation steps</b>:
+    /// <b>Этапы расчета</b>:
     /// <list type="number">
     ///   <item>
     ///     <description>
-    ///       Calculate the sums of X values (index positions), squared X values, and the product of X and Y values (input values)
-    ///       over the specified period.
+    ///       Вычисление сумм: 
+    ///       - X (индексы элементов), 
+    ///       - X² (квадраты индексов), 
+    ///       - X*Y (произведение индексов и значений).
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Compute the slope (m) of the line using the formula:
-    ///       <code>
-    ///         m = (n * Sum(XY) - Sum(X) * Sum(Y)) / (n * Sum(X^2) - (Sum(X))^2)
-    ///       </code>
-    ///       where n is the time period.
+    ///       Расчет наклона (m) по формуле:
+    ///       <code>m = (nΣXY - ΣXΣY) / (nΣX² - (ΣX)²)</code>
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Calculate the intercept (b) of the line using the formula:
-    ///       <code>
-    ///         b = (Sum(Y) - m * Sum(X)) / n
-    ///       </code>
+    ///       Расчет смещения (b) по формуле:
+    ///       <code>b = (ΣY - mΣX) / n</code>
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Determine the y-value of the line at the last index of the period:
-    ///       <code>
-    ///         y = b + m * (n - 1)
-    ///       </code>
-    ///       where n is the time period.
+    ///       Прогноз на последнем баре периода: 
+    ///       <code>y = b + m*(n-1)</code>
     ///     </description>
     ///   </item>
     /// </list>
     ///
-    /// <b>Value interpretation</b>:
+    /// <b>Интерпретация</b>:
     /// <list type="bullet">
-    ///   <item>
-    ///     <description>
-    ///       A rising output indicates an uptrend, where values are increasing.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       A falling output indicates a downtrend, where values are decreasing.
-    ///     </description>
-    ///   </item>
-    ///   <item>
-    ///     <description>
-    ///       A flat output suggests no significant trend in the data over the period.
-    ///     </description>
-    ///   </item>
+    ///   <item><description>Рост значений → восходящий тренд</description></item>
+    ///   <item><description>Падение значений → нисходящий тренд</description></item>
+    ///   <item><description>Горизонтальная линия → отсутствие тренда</description></item>
     /// </list>
     /// </remarks>
     [PublicAPI]
@@ -111,15 +73,16 @@ public static partial class Functions
         LinearRegImpl(inReal, inRange, outReal, out outRange, optInTimePeriod);
 
     /// <summary>
-    /// Returns the lookback period for <see cref="LinearReg{T}">LinearReg</see>.
+    /// Возвращает период lookback для функции <see cref="LinearReg{T}"/>.
     /// </summary>
-    /// <param name="optInTimePeriod">The time period.</param>
-    /// <returns>The number of periods required before the first output value can be calculated.</returns>
+    /// <param name="optInTimePeriod">Период расчета.</param>
+    /// <returns>Количество периодов, необходимых для первого расчета.</returns>
     [PublicAPI]
-    public static int LinearRegLookback(int optInTimePeriod = 14) => optInTimePeriod < 2 ? -1 : optInTimePeriod - 1;
+    public static int LinearRegLookback(int optInTimePeriod = 14) =>
+        optInTimePeriod < 2 ? -1 : optInTimePeriod - 1;
 
     /// <remarks>
-    /// For compatibility with abstract API
+    /// Для совместимости с абстрактным API
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode LinearReg<T>(
@@ -139,6 +102,7 @@ public static partial class Functions
     {
         outRange = Range.EndAt(0);
 
+        // Проверка корректности входного диапазона
         if (FunctionHelpers.ValidateInputRange(inRange, inReal.Length) is not { } rangeIndices)
         {
             return Core.RetCode.OutOfRangeParam;
@@ -146,23 +110,17 @@ public static partial class Functions
 
         var (startIdx, endIdx) = rangeIndices;
 
+        // Проверка минимального периода (не менее 2)
         if (optInTimePeriod < 2)
         {
             return Core.RetCode.BadParam;
         }
 
-        /* Linear Regression is a concept also known as the "least squares method" or "best fit."
-         * Linear Regression attempts to fit a straight line between several data points in such a way that
-         * distance between each data point and the line is minimized.
-         *
-         * For each point, a straight line over the specified previous bar period is determined in terms of y = b + m * x:
-         *
-         * Returns b + m * (period - 1)
-         */
-
+        // Расчет периода lookback (количество баров для первых вычислений)
         var lookbackTotal = LinearRegLookback(optInTimePeriod);
         startIdx = Math.Max(startIdx, lookbackTotal);
 
+        // Если данных недостаточно для расчета
         if (startIdx > endIdx)
         {
             return Core.RetCode.Success;
@@ -171,27 +129,46 @@ public static partial class Functions
         var outIdx = 0;
         var today = startIdx;
 
+        // Преобразование периода в числовой тип T
         var timePeriod = T.CreateChecked(optInTimePeriod);
+
+        // Сумма X = 0 + 1 + ... + (n-1) = n(n-1)/2
         var sumX = timePeriod * (timePeriod - T.One) * T.CreateChecked(0.5);
-        var sumXSqr = timePeriod * (timePeriod - T.One) * (timePeriod * FunctionHelpers.Two<T>() - T.One) / T.CreateChecked(6);
+
+        // Сумма X² = (n-1)n(2n-1)/6
+        var sumXSqr = timePeriod * (timePeriod - T.One) *
+                     (timePeriod * FunctionHelpers.Two<T>() - T.One) / T.CreateChecked(6);
+
+        // Знаменатель для формулы наклона
         var divisor = sumX * sumX - timePeriod * sumXSqr;
+
+        // Основной цикл расчета для каждого бара
         while (today <= endIdx)
         {
-            var sumXY = T.Zero;
-            var sumY = T.Zero;
+            var sumXY = T.Zero; // Сумма произведений X*Y
+            var sumY = T.Zero;  // Сумма Y
+
+            // Накопление сумм для текущего периода
             for (var i = optInTimePeriod; i-- != 0;)
             {
-                var tempValue1 = inReal[today - i];
-                sumY += tempValue1;
-                sumXY += T.CreateChecked(i) * tempValue1;
+                var tempValue = inReal[today - i];
+                sumY += tempValue;
+                sumXY += T.CreateChecked(i) * tempValue;
             }
 
+            // Расчет наклона линии регрессии
             var m = (timePeriod * sumXY - sumX * sumY) / divisor;
+
+            // Расчет точки пересечения с осью Y
             var b = (sumY - m * sumX) / timePeriod;
+
+            // Прогнозное значение на последнем баре периода
             outReal[outIdx++] = b + m * (timePeriod - T.One);
+
             today++;
         }
 
+        // Установка выходного диапазона
         outRange = new Range(startIdx, startIdx + outIdx);
 
         return Core.RetCode.Success;
