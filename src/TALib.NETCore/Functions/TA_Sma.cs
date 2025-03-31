@@ -1,51 +1,53 @@
-//Файл TA_Sma.cs
+// TA_Sma.cs
 
 namespace TALib;
 
 public static partial class Functions
 {
     /// <summary>
-    /// Simple Moving Average (Overlap Studies)
+    /// Простое скользящее среднее (Overlap Studies)
     /// </summary>
-    /// <param name="inReal">A span of input values.</param>
-    /// <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-    /// <param name="outReal">A span to store the calculated values.</param>
-    /// <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-    /// <param name="optInTimePeriod">The time period.</param>
+    /// <param name="inReal">Массив входных значений.</param>
+    /// <param name="inRange">Диапазон индексов, определяющий часть данных для расчета.</param>
+    /// <param name="outReal">Массив для сохранения рассчитанных значений.</param>
+    /// <param name="outRange">Диапазон индексов с валидными данными в выходном массиве.</param>
+    /// <param name="optInTimePeriod">Период расчета (количество периодов).</param>
     /// <typeparam name="T">
-    /// The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-    /// implementing the <see cref="IFloatingPointIeee754{T}"/> interface.
+    /// Числовой тип данных (обычно <see langword="float"/> или <see langword="double"/>),
+    /// реализующий интерфейс <see cref="IFloatingPointIeee754{T}"/>.
     /// </typeparam>
     /// <returns>
-    /// A <see cref="Core.RetCode"/> value indicating the success or failure of the calculation.
-    /// Returns <see cref="Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+    /// Код возврата <see cref="Core.RetCode"/>, указывающий на успешность операции.
+    /// Возвращает <see cref="Core.RetCode.Success"/> при успешном расчете, иначе — код ошибки.
     /// </returns>
     /// <remarks>
-    /// Simple Moving Average is a basic moving average calculation that smooths data over a specified time period
-    /// by calculating the unweighted average of the data points within that period.
+    /// Простое скользящее среднее сглаживает данные за указанный период путем расчета
+    /// несредневзвешенного среднего значений внутри периода.
     /// <para>
-    /// SMA is a lagging indicator, meaning it reacts to past price changes. Its simplicity and effectiveness make it a cornerstone
-    /// of technical analysis, often used to identify support and resistance levels, confirm trends, and generate trade signals.
+    /// SMA является запаздывающим индикатором, реагирующим на прошлые изменения цены.
+    /// Благодаря простоте и эффективности, он широко используется для определения уровней
+    /// поддержки/сопротивления, подтверждения трендов и генерации торговых сигналов.
     /// </para>
     ///
-    /// <b>Calculation steps</b>:
+    /// <b>Этапы расчета</b>:
     /// <list type="number">
     ///   <item>
     ///     <description>
-    ///       Identify the specified time period (<paramref name="optInTimePeriod"/>) over which the average will be calculated.
+    ///       Определение периода расчета (<paramref name="optInTimePeriod"/>).
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Compute the sum of the data points within the time period.
+    ///       Суммирование значений внутри периода:
     ///       <code>
     ///         Sum = data[t] + data[t-1] + ... + data[t-(optInTimePeriod-1)]
     ///       </code>
+    ///       где Sum — сумма значений за период.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Divide the sum by the number of periods to calculate the average:
+    ///       Расчет среднего значения:
     ///       <code>
     ///         SMA = Sum / optInTimePeriod
     ///       </code>
@@ -53,31 +55,31 @@ public static partial class Functions
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Slide the time window forward by one period, repeating the calculation for subsequent data points to produce the SMA series.
+    ///       Перемещение окна расчета на один период вперед и повторение операций для следующих значений.
     ///     </description>
     ///   </item>
     /// </list>
     ///
-    /// <b>Value interpretation</b>:
+    /// <b>Интерпретация значений</b>:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///       An upward-sloping SMA indicates a positive trend, with prices consistently rising over the specified period.
+    ///       Рост SMA указывает на восходящий тренд (цены растут в течение периода).
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       A downward-sloping SMA indicates a negative trend, with prices consistently falling over the specified period.
+    ///       Падение SMA указывает на нисходящий тренд (цены снижаются в течение периода).
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       SMA crossovers (e.g., short-term SMA crossing above or below a long-term SMA) are commonly used as buy or sell signals.
+    ///       Пересечение SMA (например, краткосрочного SMA с долгосрочным) часто используется как сигнал к покупке/продаже.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       The SMA provides support and resistance levels where price action might reverse or consolidate.
+    ///       SMA может выступать в роли уровней поддержки или сопротивления.
     ///     </description>
     ///   </item>
     /// </list>
@@ -92,15 +94,19 @@ public static partial class Functions
         SmaImpl(inReal, inRange, outReal, out outRange, optInTimePeriod);
 
     /// <summary>
-    /// Returns the lookback period for <see cref="Sma{T}">Sma</see>.
+    /// Возвращает lookback-период для <see cref="Sma{T}">Sma</see>.
     /// </summary>
-    /// <param name="optInTimePeriod">The time period.</param>
-    /// <returns>The number of periods required before the first output value can be calculated.</returns>
+    /// <param name="optInTimePeriod">Период расчета.</param>
+    /// <returns>Количество периодов, необходимых для расчета первого валидного значения.</returns>
+    /// <remarks>
+    /// Lookback-период равен (optInTimePeriod - 1), так как первое значение SMA требует
+    /// данных за optInTimePeriod предыдущих баров.
+    /// </remarks>
     [PublicAPI]
     public static int SmaLookback(int optInTimePeriod = 30) => optInTimePeriod < 2 ? -1 : optInTimePeriod - 1;
 
     /// <remarks>
-    /// For compatibility with abstract API
+    /// Для совместимости с абстрактным API
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode Sma<T>(
@@ -118,19 +124,26 @@ public static partial class Functions
         out Range outRange,
         int optInTimePeriod) where T : IFloatingPointIeee754<T>
     {
-        outRange = Range.EndAt(0);
+        outRange = Range.EndAt(0); // Инициализация выходного диапазона
 
+        // Проверка корректности входного диапазона
         if (FunctionHelpers.ValidateInputRange(inRange, inReal.Length) is not { } rangeIndices)
         {
-            return Core.RetCode.OutOfRangeParam;
+            return Core.RetCode.OutOfRangeParam; // Возврат ошибки при невалидном диапазоне
         }
 
+        // Проверка периода (минимум 2 бара)
         if (optInTimePeriod < 2)
         {
-            return Core.RetCode.BadParam;
+            return Core.RetCode.BadParam; // Возврат ошибки при некорректном периоде
         }
 
-        return FunctionHelpers.CalcSimpleMA(inReal, new Range(rangeIndices.startIndex, rangeIndices.endIndex), outReal, out outRange,
+        // Вызов основного метода расчета простого скользящего среднего
+        return FunctionHelpers.CalcSimpleMA(
+            inReal,
+            new Range(rangeIndices.startIndex, rangeIndices.endIndex),
+            outReal,
+            out outRange,
             optInTimePeriod);
     }
 }
