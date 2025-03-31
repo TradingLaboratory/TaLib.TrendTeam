@@ -21,6 +21,8 @@
 
     <RepositoryUrl>https://github.com/hmG3/TA-Lib.NETCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DocumentationFile>$(TargetDir)TalibTrendTeam.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
