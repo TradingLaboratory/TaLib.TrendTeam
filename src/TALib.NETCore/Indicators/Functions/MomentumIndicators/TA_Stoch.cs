@@ -1,9 +1,15 @@
+//Название файла TA_Stoch.cs
+//Группы к которым можно отнести индикатор:
+//MomentumIndicators (существующая папка - идеальное соответствие категории)
+//Oscillators (альтернатива, если требуется группировка по типу индикатора)
+//TrendIndicators (альтернатива для акцента на трендовых индикаторах)
+
 // файл TA_Stoch.cs
 namespace TALib;
 public static partial class Functions
 {
     /// <summary>
-    /// Стохастический осциллятор (индикаторы импульса)
+    /// Stochastic Oscillator (Momentum Indicators) — Стохастический осциллятор (индикаторы импульса)
     /// </summary>
     /// <param name="inHigh">Массив входных цен High (максимумы).</param>
     /// <param name="inLow">Массив входных цен Low (минимумы).</param>

@@ -1,9 +1,15 @@
+//Название файла TA_StochF.cs
+//Группы к которым можно отнести индикатор:
+//MomentumIndicators (существующая папка - идеальное соответствие категории)
+//Oscillators (альтернатива, если требуется группировка по типу индикатора)
+//ImpulseIndicators (альтернатива для акцента на импульсе)
+
 // файл TA_StochF.cs
 namespace TALib;
 public static partial class Functions
 {
     /// <summary>
-    /// Быстрый стохастический осциллятор (индикатор импульса)
+    /// Fast Stochastic Oscillator (Momentum Indicator) — Быстрый стохастический осциллятор (индикатор импульса)
     /// </summary>
     /// <param name="inHigh">Массив входных цен High (максимумы).</param>
     /// <param name="inLow">Массив входных цен Low (минимумы).</param>

@@ -6302,6 +6302,218 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
+        <member name="M:TALib.Functions.Ma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,TALib.Core.MAType)">
+             <summary>
+             Скользящее среднее (Overlap Studies)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <param name="optInMAType">Тип скользящего среднего.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Функция скользящего среднего вычисляет среднее значение серии данных за указанный период,
+             сглаживая колебания для выявления трендов. Поддерживаются различные типы скользящих средних,
+             что позволяет использовать разные методы сглаживания в зависимости от аналитических потребностей.
+            
+             <para>
+             <b>Поддерживаемые типы скользящих средних</b> через <paramref name="optInMAType"/>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.Sma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">SMA</see> (Простое скользящее среднее): Простое среднее значений за указанный период.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.Ema``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">EMA</see> (Экспоненциальное скользящее среднее): Присваивает больший вес последним данным,
+                   что делает его более чувствительным к изменениям.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.Wma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">WMA</see> (Взвешенное скользящее среднее): Взвешивает данные линейно,
+                   присваивая наибольший вес последним данным.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.Dema``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">DEMA</see> (Двойное экспоненциальное скользящее среднее): Композитное среднее,
+                   предназначенное для уменьшения запаздывания.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.Tema``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">TEMA</see> (Тройное экспоненциальное скользящее среднее): Еще больше уменьшает запаздывание,
+                   сглаживая данные.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.Trima``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">TRIMA</see> (Треугольное скользящее среднее): Метод двойного сглаживания.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.Kama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">KAMA</see> (Адаптивное скользящее среднее Кауфмана): Корректирует чувствительность на основе волатильности рынка.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.Mama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Double,System.Double)">MAMA</see> (Адаптивное скользящее среднее MESA): Адаптируется к рыночным циклам.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <see cref="M:TALib.Functions.T3``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Double)">T3</see> (Скользящее среднее T3): Гладкое скользящее среднее с уменьшенным запаздыванием.
+                 </description>
+               </item>
+             </list>
+             </para>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Восходящее скользящее среднее указывает на восходящий тренд.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Нисходящее скользящее среднее указывает на нисходящий тренд.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Пересечения различных скользящих средних (например, краткосрочных и долгосрочных) могут указывать на сигналы покупки или продажи.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MaLookback(System.Int32,TALib.Core.MAType)">
+            <summary>
+            Возвращает период предварительного просмотра для <see cref="M:TALib.Functions.Ma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,TALib.Core.MAType)">Ma</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <param name="optInMAType">Тип скользящего среднего.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Ma``1(``0[],System.Range,``0[],System.Range@,System.Int32,TALib.Core.MAType)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.LinearReg``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Линейная регрессия (статистические функции)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период расчета (по умолчанию 14).</param>
+             <typeparam name="T">
+             Числовой тип данных (например, float или double),
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Код возврата <see cref="T:TALib.Core.RetCode"/>:
+             <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете,
+             иначе код ошибки.
+             </returns>
+             <remarks>
+             Функция строит линию тренда методом наименьших квадратов для заданного периода.
+             <para>
+             Результат показывает прогнозируемое значение на последнем баре периода,
+             что помогает определить направление тренда.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Вычисление сумм:
+                   - X (индексы элементов),
+                   - X² (квадраты индексов),
+                   - X*Y (произведение индексов и значений).
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Расчет наклона (m) по формуле:
+                   <code>m = (nΣXY - ΣXΣY) / (nΣX² - (ΣX)²)</code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Расчет смещения (b) по формуле:
+                   <code>b = (ΣY - mΣX) / n</code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Прогноз на последнем баре периода:
+                   <code>y = b + m*(n-1)</code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация</b>:
+             <list type="bullet">
+               <item><description>Рост значений → восходящий тренд</description></item>
+               <item><description>Падение значений → нисходящий тренд</description></item>
+               <item><description>Горизонтальная линия → отсутствие тренда</description></item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.LinearRegLookback(System.Int32)">
+            <summary>
+            Возвращает период lookback для функции <see cref="M:TALib.Functions.LinearReg``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)"/>.
+            </summary>
+            <param name="optInTimePeriod">Период расчета.</param>
+            <returns>Количество периодов, необходимых для первого расчета.</returns>
+        </member>
+        <member name="M:TALib.Functions.LinearReg``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
         <member name="M:TALib.Functions.Adxr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
              Average Directional Movement Index Rating (Momentum Indicators)
@@ -8529,81 +8741,6 @@
             For compatibility with abstract API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.LinearReg``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Линейная регрессия (статистические функции)
-             </summary>
-             <param name="inReal">Массив входных значений для анализа.</param>
-             <param name="inRange">Диапазон индексов, определяющий участок данных для расчета.</param>
-             <param name="outReal">Массив для сохранения результатов расчета.</param>
-             <param name="outRange">Диапазон индексов с валидными данными в выходном массиве.</param>
-             <param name="optInTimePeriod">Период расчета (по умолчанию 14).</param>
-             <typeparam name="T">
-             Числовой тип данных (например, float или double),
-             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
-             </typeparam>
-             <returns>
-             Код возврата <see cref="T:TALib.Core.RetCode"/>:
-             <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете,
-             иначе код ошибки.
-             </returns>
-             <remarks>
-             Функция строит линию тренда методом наименьших квадратов для заданного периода.
-             <para>
-             Результат показывает прогнозируемое значение на последнем баре периода,
-             что помогает определить направление тренда.
-             </para>
-            
-             <b>Этапы расчета</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Вычисление сумм: 
-                   - X (индексы элементов), 
-                   - X² (квадраты индексов), 
-                   - X*Y (произведение индексов и значений).
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Расчет наклона (m) по формуле:
-                   <code>m = (nΣXY - ΣXΣY) / (nΣX² - (ΣX)²)</code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Расчет смещения (b) по формуле:
-                   <code>b = (ΣY - mΣX) / n</code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Прогноз на последнем баре периода: 
-                   <code>y = b + m*(n-1)</code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Интерпретация</b>:
-             <list type="bullet">
-               <item><description>Рост значений → восходящий тренд</description></item>
-               <item><description>Падение значений → нисходящий тренд</description></item>
-               <item><description>Горизонтальная линия → отсутствие тренда</description></item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.LinearRegLookback(System.Int32)">
-            <summary>
-            Возвращает период lookback для функции <see cref="M:TALib.Functions.LinearReg``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)"/>.
-            </summary>
-            <param name="optInTimePeriod">Период расчета.</param>
-            <returns>Количество периодов, необходимых для первого расчета.</returns>
-        </member>
-        <member name="M:TALib.Functions.LinearReg``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            Для совместимости с абстрактным API
-            </remarks>
-        </member>
         <member name="M:TALib.Functions.LinearRegAngle``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
              Linear Regression Angle (Statistic Functions)
@@ -8918,115 +9055,6 @@
             <returns>Always 0 since no historical data is required for this calculation.</returns>
         </member>
         <member name="M:TALib.Functions.Log10``1(``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Ma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,TALib.Core.MAType)">
-             <summary>
-             Moving Average (Overlap Studies)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <param name="optInMAType">The moving average type.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Moving Average function calculates the average of a series of data points over a specified period,
-             smoothing out fluctuations to highlight trends. Various types of moving averages are supported, allowing for
-             different smoothing techniques to cater to different analytical needs.
-            
-             <para>
-             <b>Supported moving average types</b> via <paramref name="optInMAType"/>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.Sma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">SMA</see> (Simple Moving Average): A straightforward average of values over the specified period.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.Ema``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">EMA</see> (Exponential Moving Average): Assigns more weight to recent data,
-                   making it more responsive to changes.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.Wma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">WMA</see> (Weighted Moving Average): Weights data points linearly,
-                   with the most recent data having the highest weight.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.Dema``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">DEMA</see> (Double Exponential Moving Average): A composite average designed to reduce lag.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.Tema``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">TEMA</see> (Triple Exponential Moving Average): Further reduces lag while smoothing data.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.Trima``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">TRIMA</see> (Triangular Moving Average): A double-smoothing technique.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.Kama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">KAMA</see> (Kaufman Adaptive Moving Average): Adjusts responsiveness based on market volatility.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.Mama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Double,System.Double)">MAMA</see> (MESA Adaptive Moving Average): Adapts to market cycles.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   <see cref="M:TALib.Functions.T3``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Double)">T3</see> (T3 Moving Average): A smooth moving average with reduced lag.
-                 </description>
-               </item>
-             </list>
-             </para>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A rising moving average indicates an uptrend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A falling moving average suggests a downtrend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Crossovers of different moving averages (e.g., short-term and long-term) can indicate buy or sell signals.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MaLookback(System.Int32,TALib.Core.MAType)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Ma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,TALib.Core.MAType)">Ma</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <param name="optInMAType">The moving average type.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Ma``1(``0[],System.Range,``0[],System.Range@,System.Int32,TALib.Core.MAType)">
             <remarks>
             For compatibility with abstract API
             </remarks>

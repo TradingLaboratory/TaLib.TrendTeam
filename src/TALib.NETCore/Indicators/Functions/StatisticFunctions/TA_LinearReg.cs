@@ -1,3 +1,9 @@
+//Название файла: TA_LinearReg.cs
+//Группы к которым можно отнести индикатор:
+//StatisticFunctions (существующая папка - идеальное соответствие категории)
+//TrendIndicators (альтернатива, если требуется группировка по типу индикатора)
+//RegressionAnalysis (альтернатива для акцента на методе анализа)
+
 namespace TALib;
 
 public static partial class Functions
@@ -5,10 +11,23 @@ public static partial class Functions
     /// <summary>
     /// Линейная регрессия (статистические функции)
     /// </summary>
-    /// <param name="inReal">Массив входных значений для анализа.</param>
-    /// <param name="inRange">Диапазон индексов, определяющий участок данных для расчета.</param>
-    /// <param name="outReal">Массив для сохранения результатов расчета.</param>
-    /// <param name="outRange">Диапазон индексов с валидными данными в выходном массиве.</param>
+    /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+    /// <param name="inRange">
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+    /// </param>
+    /// <param name="outReal">
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+    /// </param>
+    /// <param name="outRange">
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+    /// </param>
     /// <param name="optInTimePeriod">Период расчета (по умолчанию 14).</param>
     /// <typeparam name="T">
     /// Числовой тип данных (например, float или double),
@@ -30,9 +49,9 @@ public static partial class Functions
     /// <list type="number">
     ///   <item>
     ///     <description>
-    ///       Вычисление сумм: 
-    ///       - X (индексы элементов), 
-    ///       - X² (квадраты индексов), 
+    ///       Вычисление сумм:
+    ///       - X (индексы элементов),
+    ///       - X² (квадраты индексов),
     ///       - X*Y (произведение индексов и значений).
     ///     </description>
     ///   </item>
@@ -50,7 +69,7 @@ public static partial class Functions
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Прогноз на последнем баре периода: 
+    ///       Прогноз на последнем баре периода:
     ///       <code>y = b + m*(n-1)</code>
     ///     </description>
     ///   </item>
