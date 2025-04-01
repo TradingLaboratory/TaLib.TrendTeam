@@ -1,16 +1,33 @@
 //Название файла TA_StdDev.cs
+//Группы к которым можно отнести индикатор:
+//StatisticFunctions (существующая папка - идеальное соответствие категории)
+//VolatilityIndicators (альтернатива, если требуется группировка по типу индикатора)
+//MathOperators (альтернатива для акцента на математических операциях)
 
 namespace TALib;
 
 public static partial class Functions
 {
     /// <summary>
-    /// Стандартное отклонение (Статистические функции)
+    /// Standard Deviation (Statistical Functions) — Стандартное отклонение (Статистические функции)
     /// </summary>
-    /// <param name="inReal">Диапазон входных значений.</param>
-    /// <param name="inRange">Диапазон индексов, определяющий часть данных для расчета во входном наборе.</param>
-    /// <param name="outReal">Диапазон для сохранения рассчитанных значений.</param>
-    /// <param name="outRange">Диапазон индексов, представляющий валидные данные в выходном наборе.</param>
+    /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+    /// <param name="inRange">
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+    /// </param>
+    /// <param name="outReal">
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+    /// </param>
+    /// <param name="outRange">
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+    /// </param>
     /// <param name="optInTimePeriod">Период времени (количество периодов).</param>
     /// <param name="optInNbDev">Количество стандартных отклонений (множитель).</param>
     /// <typeparam name="T">

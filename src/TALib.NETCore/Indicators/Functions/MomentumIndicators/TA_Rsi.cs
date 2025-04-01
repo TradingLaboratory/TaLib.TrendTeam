@@ -1,21 +1,44 @@
 // Файл: TA_Rsi.cs
+// Группы, к которым можно отнести индикатор:
+// MomentumIndicators (существующая папка - идеальное соответствие категории)
+// Oscillators (альтернатива, если требуется группировка по типу индикатора)
+// TrendStrength (альтернатива для акцента на силе тренда)
+//TODO: Нужно взять из оригинальной библиотеки и пересобрать, т.к. описание не работает (remarks)
+
 namespace TALib;
+
+/// <summary>
+/// Содержит реализацию технических индикаторов библиотеки TA-Lib.
+/// </summary>
 public static partial class Functions
 {
     /// <summary>
-    /// Индекс относительной силы (RSI) - осциллятор импульса
+    /// Relative Strength Index (RSI) (Momentum) — Индекс относительной силы (RSI) (Импульс)
     /// </summary>
-    /// <param name="inReal">Массив входных значений для расчета.</param>
-    /// <param name="inRange">Диапазон индексов, определяющий часть данных для расчета во входном массиве.</param>
-    /// <param name="outReal">Массив для сохранения рассчитанных значений RSI.</param>
-    /// <param name="outRange">Диапазон индексов с валидными данными в выходном массиве.</param>
+    /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+    /// <param name="inRange">
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+    /// </param>
+    /// <param name="outReal">
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+    /// </param>
+    /// <param name="outRange">
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+    /// </param>
     /// <param name="optInTimePeriod">Период расчета (по умолчанию 14).</param>
     /// <typeparam name="T">Числовой тип данных (float/double с поддержкой IEEE 754).</typeparam>
     /// <returns>Код результата выполнения из перечисления Core.RetCode</returns>
     /// <remarks>
-    /// RSI измеряет скорость и изменение ценовых движений в диапазоне 0-100. 
+    /// RSI измеряет скорость и изменение ценовых движений в диапазоне 0-100.
     /// Используется для определения перекупленности/перепроданности, точек разворота и силы тренда.
-    /// 
+    ///
     /// <b>Методика расчета</b>:
     /// <list type="number">
     ///   <item>
@@ -119,8 +142,7 @@ public static partial class Functions
         // Обработка специфики Metastock
         if (Core.UnstablePeriodSettings.Get(Core.UnstableFunc.Rsi) == 0 &&
             Core.CompatibilitySettings.Get() == Core.CompatibilityMode.Metastock &&
-            ProcessRsiMetastockCompatibility(inReal, outReal, ref outRange, optInTimePeriod, endIdx, startIdx, ref prevValue, ref today,
-                ref outIdx, out var retCode))
+            ProcessRsiMetastockCompatibility(inReal, outReal, ref outRange, optInTimePeriod, endIdx, startIdx, ref prevValue, ref today, ref outIdx, out var retCode))
         {
             return retCode;
         }

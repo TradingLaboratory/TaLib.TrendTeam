@@ -1,16 +1,33 @@
 // TA_Sma.cs
+// Группы к которым можно отнести индикатор:
+// OverlapStudies (существующая папка - идеальное соответствие категории)
+// MovingAverages (альтернатива, если требуется группировка по типу индикатора)
+// TrendIndicators (альтернатива для акцента на трендовых индикаторах)
 
 namespace TALib;
 
 public static partial class Functions
 {
     /// <summary>
-    /// Простое скользящее среднее (Overlap Studies)
+    /// Simple Moving Average (Overlap Studies) — Простое скользящее среднее (Наложенные исследования)
     /// </summary>
-    /// <param name="inReal">Массив входных значений.</param>
-    /// <param name="inRange">Диапазон индексов, определяющий часть данных для расчета.</param>
-    /// <param name="outReal">Массив для сохранения рассчитанных значений.</param>
-    /// <param name="outRange">Диапазон индексов с валидными данными в выходном массиве.</param>
+    /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+    /// <param name="inRange">
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+    /// </param>
+    /// <param name="outReal">
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+    /// </param>
+    /// <param name="outRange">
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+    /// </param>
     /// <param name="optInTimePeriod">Период расчета (количество периодов).</param>
     /// <typeparam name="T">
     /// Числовой тип данных (обычно <see langword="float"/> или <see langword="double"/>),
