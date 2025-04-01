@@ -8,10 +8,27 @@ public static partial class Functions
     /// <param name="inHigh">Массив входных цен High (максимумы).</param>
     /// <param name="inLow">Массив входных цен Low (минимумы).</param>
     /// <param name="inClose">Массив входных цен Close (закрытия).</param>
-    /// <param name="inRange">Диапазон индексов для вычислений во входных данных.</param>
-    /// <param name="outSlowK">Массив для сохранения значений линии %K (медленной).</param>
-    /// <param name="outSlowD">Массив для сохранения значений линии %D (медленной).</param>
-    /// <param name="outRange">Диапазон индексов с валидными данными в выходных массивах.</param>
+    /// <param name="inRange">
+    /// Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+    /// <para>- Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.</para>
+    /// </param>
+    /// <param name="outSlowK">
+    /// Массив, содержащий ТОЛЬКО валидные значения линии %K (медленной).
+    /// <para>- Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).</para>
+    /// <para>- Каждый элемент <c>outSlowK[i]</c> соответствует <c>inClose[outRange.Start + i]</c>.</para>
+    /// </param>
+    /// <param name="outSlowD">
+    /// Массив, содержащий ТОЛЬКО валидные значения линии %D (медленной).
+    /// <para>- Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).</para>
+    /// <para>- Каждый элемент <c>outSlowD[i]</c> соответствует <c>inClose[outRange.Start + i]</c>.</para>
+    /// </param>
+    /// <param name="outRange">
+    /// Диапазон индексов в <paramref name="inClose"/>, для которых рассчитаны валидные значения:
+    /// <para>- <b>Start</b>: индекс первого элемента <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outSlowK"/> и <paramref name="outSlowD"/>.</para>
+    /// <para>- <b>End</b>: индекс последнего элемента <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outSlowK"/> и <paramref name="outSlowD"/>.</para>
+    /// <para>- Гарантируется: <c>End == inClose.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.</para>
+    /// <para>- Если данных недостаточно (например, длина <paramref name="inClose"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.</para>
+    /// </param>
     /// <param name="optInFastKPeriod">Период для расчета быстрой линии %K.</param>
     /// <param name="optInSlowKPeriod">Период сглаживания для преобразования Fast %K в Slow %K.</param>
     /// <param name="optInSlowKMAType">Тип скользящей средней для сглаживания Fast %K.</param>
@@ -20,11 +37,11 @@ public static partial class Functions
     /// <typeparam name="T">Числовой тип данных (float/double).</typeparam>
     /// <returns>Код результата выполнения (<see cref="Core.RetCode"/>).</returns>
     /// <remarks>
-    /// Стохастический осциллятор определяет положение цены закрытия относительно ценового диапазона за указанный период. 
+    /// Стохастический осциллятор определяет положение цены закрытия относительно ценового диапазона за указанный период.
     /// Позволяет идентифицировать условия перекупленности/перепроданности и потенциальные развороты.
     /// <para>
     /// Индикатор состоит из двух линий:
-    /// <c>%K</c> (сырой стохастик) и <c>%D</c> (сигнальная линия). 
+    /// <c>%K</c> (сырой стохастик) и <c>%D</c> (сигнальная линия).
     /// Реализована "медленная" версия осциллятора с дополнительным сглаживанием.
     /// </para>
     ///
@@ -52,7 +69,7 @@ public static partial class Functions
     /// <list type="bullet">
     ///   <item><description>Значения выше 80: зона перекупленности (потенциальный разворот вниз)</description></item>
     ///   <item><description>Значения ниже 20: зона перепроданности (потенциальный рост)</description></item>
-    ///   <item><description>Пересечения %K и %D: 
+    ///   <item><description>Пересечения %K и %D:
     ///     <list type="bullet">
     ///       <item><description>%K ↑ выше %D - возможный сигнал на покупку</description></item>
     ///       <item><description>%K ↓ ниже %D - возможный сигнал на продажу</description></item>
@@ -61,6 +78,7 @@ public static partial class Functions
     ///   <item><description>Дивергенция между осциллятором и ценой указывает на ослабление тренда</description></item>
     /// </list>
     /// </remarks>
+
     [PublicAPI]
     public static Core.RetCode Stoch<T>(
         ReadOnlySpan<T> inHigh,
