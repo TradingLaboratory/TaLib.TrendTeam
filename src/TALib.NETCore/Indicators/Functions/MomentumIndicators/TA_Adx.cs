@@ -1,74 +1,74 @@
-/*
- * Technical Analysis Library for .NET
- * Copyright (c) 2020-2025 Anatolii Siryi
- *
- * This file is part of Technical Analysis Library for .NET.
- *
- * Technical Analysis Library for .NET is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Technical Analysis Library for .NET is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Technical Analysis Library for .NET. If not, see <https://www.gnu.org/licenses/>.
- */
+//Название файла: TA_Adx.cs
+//Группы к которым можно отнести индикатор:
+//MomentumIndicators (существующая папка - идеальное соответствие категории)
+//TrendStrength (альтернатива для акцента на силе тренда)
+//DirectionalMovement (альтернатива для акцента на направленном движении)
 
 namespace TALib;
 
 public static partial class Functions
 {
     /// <summary>
-    /// Average Directional Movement Index (Momentum Indicators)
+    /// Индекс среднего направленного движения (Индикаторы импульса)
     /// </summary>
-    /// <param name="inHigh">A span of input high prices.</param>
-    /// <param name="inLow">A span of input low prices.</param>
-    /// <param name="inClose">A span of input close prices.</param>
-    /// <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-    /// <param name="outReal">A span to store the calculated values.</param>
-    /// <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-    /// <param name="optInTimePeriod">The time period.</param>
+    /// <param name="inHigh">Массив входных максимальных цен.</param>
+    /// <param name="inLow">Массив входных минимальных цен.</param>
+    /// <param name="inClose">Массив входных цен закрытия.</param>
+    /// <param name="inRange">
+    /// Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+    /// - Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.
+    /// </param>
+    /// <param name="outReal">
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>.
+    /// </param>
+    /// <param name="outRange">
+    /// Диапазон индексов в <paramref name="inHigh"/>, для которых рассчитаны валидные значения:
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+    /// </param>
+    /// <param name="optInTimePeriod">Период времени.</param>
     /// <typeparam name="T">
-    /// The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-    /// implementing the <see cref="IFloatingPointIeee754{T}"/> interface.
+    /// Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+    /// реализующий интерфейс <see cref="IFloatingPointIeee754{T}"/>.
     /// </typeparam>
     /// <returns>
-    /// A <see cref="Core.RetCode"/> value indicating the success or failure of the calculation.
-    /// Returns <see cref="Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+    /// Значение <see cref="Core.RetCode"/>, указывающее на успех или неудачу расчета.
+    /// Возвращает <see cref="Core.RetCode.Success"/> при успешном расчете, или соответствующий код ошибки в противном случае.
     /// </returns>
     /// <remarks>
-    /// Average Directional Movement Index is a momentum indicator that measures the strength of a trend
-    /// without indicating its direction. It is derived from the Directional Movement indicators (+DI and -DI) and is
-    /// commonly used in conjunction with them to evaluate the intensity of market trends.
+    /// Индекс среднего направленного движения (ADX) — это индикатор импульса, который измеряет силу тренда
+    /// без указания его направления. Он выводится из индикаторов направленного движения (+DI и -DI) и часто используется
+    /// вместе с ними для оценки интенсивности рыночных трендов.
     /// <para>
-    /// The function can guide the selection of trend-following or range-based strategies. It is often combined with moving averages,
-    /// oscillators, or support/resistance analysis to avoid false signals in low-trend-strength conditions.
+    /// Функция может направлять выбор стратегий следования за трендом или основанных на диапазоне. Часто комбинируется с
+    /// скользящими средними, осцилляторами или анализом уровней поддержки/сопротивления, чтобы избежать ложных сигналов в условиях
+    /// низкой силы тренда.
     /// </para>
     ///
-    /// <b>Calculation steps</b>:
+    /// <b>Этапы расчета</b>:
     /// <list type="number">
     ///   <item>
     ///     <description>
-    ///       Calculate the True Range (TR) and Directional Movement (DM) values:
+    ///       Рассчитать значения Истинного диапазона (TR) и Направленного движения (DM):
     /// <code>
     /// TR = max(High - Low, abs(High - Previous Close), abs(Low - Previous Close))
-    /// +DM = High - Previous High (if positive and greater than Low - Previous Low, otherwise 0)
-    /// -DM = Previous Low - Low (if positive and greater than High - Previous High, otherwise 0)
+    /// +DM = High - Previous High (если положительное и больше, чем Low - Previous Low, иначе 0)
+    /// -DM = Previous Low - Low (если положительное и больше, чем High - Previous High, иначе 0)
     /// </code>
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Smooth the TR, +DM, and -DM values over the specified time period using Wilder's smoothing technique.
+    ///       Сгладить значения TR, +DM и -DM за указанный период времени с использованием метода сглаживания Уайлдера.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Calculate the Directional Indicators (+DI and -DI):
+    ///       Рассчитать индикаторы направленного движения (+DI и -DI):
     /// <code>
     /// +DI = 100 * (+DM / TR)
     /// -DI = 100 * (-DM / TR)
@@ -77,7 +77,7 @@ public static partial class Functions
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Calculate the Directional Movement Index (DX):
+    ///       Рассчитать индекс направленного движения (DX):
     ///       <code>
     ///         DX = 100 * abs(+DI - -DI) / (+DI + -DI)
     ///       </code>
@@ -85,26 +85,26 @@ public static partial class Functions
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Compute the ADX as a smoothed average of the DX values over the specified time period.
+    ///       Вычислить ADX как сглаженное среднее значений DX за указанный период времени.
     ///     </description>
     ///   </item>
     /// </list>
     ///
-    /// <b>Value interpretation</b>:
+    /// <b>Интерпретация значений</b>:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///       Values above 25 indicate a strong trend, while values below 20 suggest a weak or non-existent trend.
+    ///       Значения выше 25 указывают на сильный тренд, тогда как значения ниже 20 свидетельствуют о слабом или отсутствующем тренде.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       A rising value suggests a strengthening trend, while a falling ADX indicates a weakening trend.
+    ///       Растущее значение указывает на усиление тренда, тогда как падающий ADX свидетельствует об ослабевающем тренде.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       The ADX does not indicate the direction of the trend; it measures only its strength.
+    ///       ADX не указывает направление тренда; он измеряет только его силу.
     ///     </description>
     ///   </item>
     /// </list>
@@ -121,16 +121,16 @@ public static partial class Functions
         AdxImpl(inHigh, inLow, inClose, inRange, outReal, out outRange, optInTimePeriod);
 
     /// <summary>
-    /// Returns the lookback period for <see cref="Adx{T}">Adx</see>.
+    /// Возвращает период обратного просмотра для <see cref="Adx{T}">Adx</see>.
     /// </summary>
-    /// <param name="optInTimePeriod">The time period.</param>
-    /// <returns>The number of periods required before the first output value can be calculated.</returns>
+    /// <param name="optInTimePeriod">Период времени.</param>
+    /// <returns>Количество периодов, необходимых до расчета первого выходного значения.</returns>
     [PublicAPI]
     public static int AdxLookback(int optInTimePeriod = 14) =>
         optInTimePeriod < 2 ? -1 : optInTimePeriod * 2 + Core.UnstablePeriodSettings.Get(Core.UnstableFunc.Adx) - 1;
 
     /// <remarks>
-    /// For compatibility with abstract API
+    /// Для совместимости с абстрактным API
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode Adx<T>(
@@ -167,11 +167,11 @@ public static partial class Functions
             return Core.RetCode.BadParam;
         }
 
-        /* The DM1 (one period) is based on the largest part of today's range that is outside of yesterday's range.
+        /* DM1 (один период) основан на самой большой части сегодняшнего диапазона, которая находится за пределами вчерашнего диапазона.
          *
-         * The following 7 cases explain how the +DM and -DM are calculated on one period:
+         * Следующие 7 случаев объясняют, как рассчитываются +DM и -DM за один период:
          *
-         * Case 1:                       Case 2:
+         * Случай 1:                       Случай 2:
          *    C│                        A│
          *     │                         │ C│
          *     │ +DM1 = (C-A)           B│  │ +DM1 = 0
@@ -180,7 +180,7 @@ public static partial class Functions
          *  │ D│
          * B│
          *
-         * Case 3:                       Case 4:
+         * Случай 3:                       Случай 4:
          *    C│                           C│
          *     │                        A│  │
          *     │ +DM1 = (C-A)            │  │ +DM1 = 0
@@ -190,7 +190,7 @@ public static partial class Functions
          * B│  │
          *    D│
          *
-         * Case 5:                      Case 6:
+         * Случай 5:                      Случай 6:
          * A│                           A│ C│
          *  │ C│ +DM1 = 0                │  │  +DM1 = 0
          *  │  │ -DM1 = 0                │  │  -DM1 = 0
@@ -198,7 +198,7 @@ public static partial class Functions
          * B│                           B│ D│
          *
          *
-         * Case 7:
+         * Случай 7:
          *
          *    C│
          * A│  │
@@ -206,58 +206,58 @@ public static partial class Functions
          * B│  │ -DM=0
          *    D│
          *
-         * In case 3 and 4, the rule is that the smallest delta between (C-A) and (B-D) determine
-         * which of +DM or -DM is zero.
+         * В случаях 3 и 4 правило заключается в том, что наименьшая разница между (C-A) и (B-D) определяет,
+         * какое из значений +DM или -DM будет равно нулю.
          *
-         * In case 7, (C-A) and (B-D) are equal, so both +DM and -DM are zero.
+         * В случае 7 (C-A) и (B-D) равны, поэтому оба значения +DM и -DM равны нулю.
          *
-         * The rules remain the same when A=B and C=D (when the highs equal the lows).
+         * Правила остаются теми же, когда A=B и C=D (когда максимумы равны минимумам).
          *
-         * When calculating the DM over a period > 1, the one-period DM for the desired period are initially summed.
-         * In other words, for a -DM14, sum the -DM1 for the first 14 days
-         * (that's 13 values because there is no DM for the first day!)
-         * Subsequent DM are calculated using Wilder's smoothing approach:
+         * При расчете DM за период > 1, однопериодные DM для желаемого периода сначала суммируются.
+         * Другими словами, для -DM14 суммируются -DM1 за первые 14 дней
+         * (это 13 значений, так как для первого дня нет DM!)
+         * Последующие DM рассчитываются с использованием метода сглаживания Уайлдера:
          *
          *                                    Previous -DM14
-         *   Today's -DM14 = Previous -DM14 -  ────────────── + Today's -DM1
+         *   Сегодняшний -DM14 = Previous -DM14 -  ────────────── + Сегодняшний -DM1
          *                                          14
          *
-         * (Same thing for +DM14)
+         * (То же самое для +DM14)
          *
-         * Calculation of a -DI14 is as follows:
+         * Расчет -DI14 выполняется следующим образом:
          *
          *             -DM14
          *   -DI14 =  ────────
          *              TR14
          *
-         * (Same thing for +DI14)
+         * (То же самое для +DI14)
          *
-         * Calculation of the TR14 is:
+         * Расчет TR14 выполняется следующим образом:
          *
          *                                  Previous TR14
-         *   Today's TR14 = Previous TR14 - ───────────── + Today's TR1
+         *   Сегодняшний TR14 = Previous TR14 - ───────────── + Сегодняшний TR1
          *                                        14
          *
-         *   The first TR14 is the summation of the first 14 TR1. See the TRange function on how to calculate the true range.
+         *   Первый TR14 — это сумма первых 14 TR1. См. функцию TRange для расчета истинного диапазона.
          *
-         * Calculation of the DX14 is:
+         * Расчет DX14 выполняется следующим образом:
          *
          *   diffDI = ABS((-DI14) - (+DI14))
          *   sumDI  = (-DI14) + (+DI14)
          *
          *   DX14 = 100 * (diffDI / sumDI)
          *
-         * Calculation of the first ADX:
+         * Расчет первого ADX:
          *
-         *   ADX14 = SUM of the first 14 DX
+         *   ADX14 = СУММА первых 14 DX
          *
-         * Calculation of subsequent ADX:
+         * Расчет последующих ADX:
          *
-         *           ((Previous ADX14) * (14 - 1)) + Today's DX
+         *           ((Previous ADX14) * (14 - 1)) + Сегодняшний DX
          *   ADX14 = ──────────────────────────────────────────
          *                            14
          *
-         * Reference:
+         * Источник:
          *   New Concepts In Technical Trading Systems, J. Welles Wilder Jr
          */
 
@@ -276,22 +276,26 @@ public static partial class Functions
         var outBegIdx = today;
         today = startIdx - lookbackTotal;
 
+        // Инициализация значений DM и TR
         FunctionHelpers.InitDMAndTR(inHigh, inLow, inClose, out var prevHigh, ref today, out var prevLow, out var prevClose, timePeriod,
             ref prevPlusDM, ref prevMinusDM, ref prevTR);
 
+        // Суммирование всех начальных значений DX
         var sumDX = AddAllInitialDX(inHigh, inLow, inClose, timePeriod, ref today, ref prevHigh, ref prevLow, ref prevClose, ref prevPlusDM,
             ref prevMinusDM, ref prevTR);
 
-        // Calculate the first ADX
+        // Расчет первого ADX
         var prevADX = sumDX / timePeriod;
 
+        // Пропуск нестабильного периода ADX
         SkipAdxUnstablePeriod(inHigh, inLow, inClose, ref today, ref prevHigh, ref prevLow, ref prevClose, ref prevPlusDM, ref prevMinusDM,
             ref prevTR, timePeriod, ref prevADX);
 
-        // Output the first ADX
+        // Вывод первого ADX
         outReal[0] = prevADX;
         var outIdx = 1;
 
+        // Расчет и вывод последующих значений ADX
         CalcAndOutputSubsequentADX(inHigh, inLow, inClose, outReal, ref today, endIdx, ref prevHigh, ref prevLow, ref prevClose,
             ref prevPlusDM, ref prevMinusDM, ref prevTR, timePeriod, ref prevADX, ref outIdx);
 
@@ -317,6 +321,7 @@ public static partial class Functions
         for (var i = Int32.CreateTruncating(timePeriod); i > 0; i--)
         {
             today++;
+            // Обновление значений DM и TR
             FunctionHelpers.UpdateDMAndTR(inHigh, inLow, inClose, ref today, ref prevHigh, ref prevLow, ref prevClose, ref prevPlusDM,
                 ref prevMinusDM, ref prevTR, timePeriod);
 
@@ -353,6 +358,7 @@ public static partial class Functions
         for (var i = Core.UnstablePeriodSettings.Get(Core.UnstableFunc.Adx); i > 0; i--)
         {
             today++;
+            // Обновление значений DM и TR
             FunctionHelpers.UpdateDMAndTR(inHigh, inLow, icClose, ref today, ref prevHigh, ref prevLow, ref prevClose, ref prevPlusDM,
                 ref prevMinusDM, ref prevTR, timePeriod);
 
@@ -393,6 +399,7 @@ public static partial class Functions
         while (today < endIdx)
         {
             today++;
+            // Обновление значений DM и TR
             FunctionHelpers.UpdateDMAndTR(inHigh, inLow, inClose, ref today, ref prevHigh, ref prevLow, ref prevClose, ref prevPlusDM,
                 ref prevMinusDM, ref prevTR, timePeriod);
 

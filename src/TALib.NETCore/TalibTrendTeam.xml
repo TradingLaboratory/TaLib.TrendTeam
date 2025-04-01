@@ -6090,6 +6090,121 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
+        <member name="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Индекс среднего направленного движения (Индикаторы импульса)
+             </summary>
+             <param name="inHigh">Массив входных максимальных цен.</param>
+             <param name="inLow">Массив входных минимальных цен.</param>
+             <param name="inClose">Массив входных цен закрытия.</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу расчета.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Индекс среднего направленного движения (ADX) — это индикатор импульса, который измеряет силу тренда
+             без указания его направления. Он выводится из индикаторов направленного движения (+DI и -DI) и часто используется
+             вместе с ними для оценки интенсивности рыночных трендов.
+             <para>
+             Функция может направлять выбор стратегий следования за трендом или основанных на диапазоне. Часто комбинируется с
+             скользящими средними, осцилляторами или анализом уровней поддержки/сопротивления, чтобы избежать ложных сигналов в условиях
+             низкой силы тренда.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Рассчитать значения Истинного диапазона (TR) и Направленного движения (DM):
+             <code>
+             TR = max(High - Low, abs(High - Previous Close), abs(Low - Previous Close))
+             +DM = High - Previous High (если положительное и больше, чем Low - Previous Low, иначе 0)
+             -DM = Previous Low - Low (если положительное и больше, чем High - Previous High, иначе 0)
+             </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Сгладить значения TR, +DM и -DM за указанный период времени с использованием метода сглаживания Уайлдера.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать индикаторы направленного движения (+DI и -DI):
+             <code>
+             +DI = 100 * (+DM / TR)
+             -DI = 100 * (-DM / TR)
+             </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать индекс направленного движения (DX):
+                   <code>
+                     DX = 100 * abs(+DI - -DI) / (+DI + -DI)
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить ADX как сглаженное среднее значений DX за указанный период времени.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Значения выше 25 указывают на сильный тренд, тогда как значения ниже 20 свидетельствуют о слабом или отсутствующем тренде.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Растущее значение указывает на усиление тренда, тогда как падающий ADX свидетельствует об ослабевающем тренде.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   ADX не указывает направление тренда; он измеряет только его силу.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.AdxLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Adx</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до расчета первого выходного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Adx``1(``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
         <member name="M:TALib.Functions.Accbands``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32)">
              <summary>
              Acceleration Bands (Overlap Studies) - Полосы ускорения
@@ -6185,192 +6300,6 @@
         <member name="M:TALib.Functions.Accbands``1(``0[],``0[],``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32)">
             <remarks>
             Для совместимости с абстрактным API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.AdOsc``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32)">
-             <summary>
-             Осциллятор Chaikin A/D (индикаторы объема)
-             </summary>
-             <param name="inHigh">Массив входных цен High (максимумы).</param>
-             <param name="inLow">Массив входных цен Low (минимумы).</param>
-             <param name="inClose">Массив входных цен Close (закрытия).</param>
-             <param name="inVolume">Массив входных данных объема торгов.</param>
-             <param name="inRange">Диапазон индексов для вычислений во входных данных.</param>
-             <param name="outReal">Массив для сохранения рассчитанных значений осциллятора.</param>
-             <param name="outRange">Диапазон индексов с валидными данными в выходном массиве.</param>
-             <param name="optInFastPeriod">Период для расчета быстрой экспоненциальной скользящей средней (EMA).</param>
-             <param name="optInSlowPeriod">Период для расчета медленной экспоненциальной скользящей средней (EMA).</param>
-             <typeparam name="T">Числовой тип данных (float/double).</typeparam>
-             <returns>Код результата выполнения (<see cref="T:TALib.Core.RetCode"/>).</returns>
-             <remarks>
-             Осциллятор Chaikin A/D измеряет импульс линии Накопления/Распределения, сравнивая краткосрочные и долгосрочные интервалы денежного потока.
-             <para>
-             Позволяет выявлять изменения покупательского/продавеческого давления до их проявления в ценовых данных.
-             Может подтверждать тренды, выявленные по цене, или служить опережающим индикатором пробоев.
-             </para>
-            
-             <b>Этапы расчета</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Расчет линии Накопления/Распределения:
-                   <code>
-                     A/D Line = ((Close - Low) - (High - Close)) / (High - Low) * Volume
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Расчет быстрой EMA (экспоненциальной скользящей средней) для линии A/D.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Расчет медленной EMA для линии A/D.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Осциллятор Chaikin A/D как разница между быстрой и медленной EMA:
-                   <code>
-                     AdOsc = EMA(Fast, A/D Line) - EMA(Slow, A/D Line)
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Интерпретация значений</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Рост значений указывает на усиление покупательского давления (потенциальный рост цены).
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Падение значений указывает на усиление продавеческого давления (потенциальное снижение цены).
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Дивергенция между осциллятором и ценой сигнализирует о возможных разворотах тренда.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.AdOscLookback(System.Int32,System.Int32)">
-            <summary>
-            Возвращает период "просмотра назад" для функции <see cref="M:TALib.Functions.AdOsc``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32)"/>.
-            </summary>
-            <param name="optInFastPeriod">Период для быстрой EMA.</param>
-            <param name="optInSlowPeriod">Период для медленной EMA.</param>
-            <returns>Количество периодов, необходимых для первого расчета.</returns>
-        </member>
-        <member name="M:TALib.Functions.AdOsc``1(``0[],``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32,System.Int32)">
-            <remarks>
-            Для совместимости с абстрактным API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Average Directional Movement Index (Momentum Indicators)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inClose">A span of input close prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Average Directional Movement Index is a momentum indicator that measures the strength of a trend
-             without indicating its direction. It is derived from the Directional Movement indicators (+DI and -DI) and is
-             commonly used in conjunction with them to evaluate the intensity of market trends.
-             <para>
-             The function can guide the selection of trend-following or range-based strategies. It is often combined with moving averages,
-             oscillators, or support/resistance analysis to avoid false signals in low-trend-strength conditions.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Calculate the True Range (TR) and Directional Movement (DM) values:
-             <code>
-             TR = max(High - Low, abs(High - Previous Close), abs(Low - Previous Close))
-             +DM = High - Previous High (if positive and greater than Low - Previous Low, otherwise 0)
-             -DM = Previous Low - Low (if positive and greater than High - Previous High, otherwise 0)
-             </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Smooth the TR, +DM, and -DM values over the specified time period using Wilder's smoothing technique.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the Directional Indicators (+DI and -DI):
-             <code>
-             +DI = 100 * (+DM / TR)
-             -DI = 100 * (-DM / TR)
-             </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the Directional Movement Index (DX):
-                   <code>
-                     DX = 100 * abs(+DI - -DI) / (+DI + -DI)
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the ADX as a smoothed average of the DX values over the specified time period.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Values above 25 indicate a strong trend, while values below 20 suggest a weak or non-existent trend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A rising value suggests a strengthening trend, while a falling ADX indicates a weakening trend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The ADX does not indicate the direction of the trend; it measures only its strength.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.AdxLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Adx</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Adx``1(``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
             </remarks>
         </member>
         <member name="M:TALib.Functions.Adxr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
@@ -13366,6 +13295,90 @@
             <remarks>
             Реализация для совместимости с абстрактным API
             </remarks>
+        </member>
+        <member name="M:TALib.Functions.AdOsc``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32)">
+             <summary>
+             Осциллятор Chaikin A/D (индикаторы объема)
+             </summary>
+             <param name="inHigh">Массив входных цен High (максимумы)</param>
+             <param name="inLow">Массив входных цен Low (минимумы)</param>
+             <param name="inClose">Массив входных цен Close (закрытия)</param>
+             <param name="inVolume">Массив входных данных объема торгов</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных во входных массивах (начальный и конечный индексы).  
+             - Если не указан, обрабатывается весь массив
+             </param>
+             <param name="outReal">Массив для сохранения рассчитанных значений осциллятора</param>
+             <param name="outRange">
+             Диапазон индексов с валидными данными в выходном массиве:  
+             - Start: индекс первого валидного значения (>= lookback периода)  
+             - End: индекс последнего обработанного элемента
+             </param>
+             <param name="optInFastPeriod">Период для расчета быстрой EMA (по умолчанию 3)</param>
+             <param name="optInSlowPeriod">Период для расчета медленной EMA (по умолчанию 10)</param>
+             <typeparam name="T">Числовой тип данных (float/double)</typeparam>
+             <returns>Код результата выполнения (<see cref="T:TALib.Core.RetCode"/>)</returns>
+             <remarks>
+             Осциллятор Chaikin A/D измеряет импульс линии Накопления/Распределения, 
+             сравнивая краткосрочные и долгосрочные интервалы денежного потока.
+             <para>
+             Позволяет выявлять изменения баланса покупок/продаж до их отражения в ценах.
+             Может подтверждать тренды или предсказывать пробои уровней.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Расчет линии Накопления/Распределения (A/D Line):
+                   <code>
+                     A/D Line = ((Close - Low) - (High - Close)) / (High - Low) * Volume
+                   </code>
+                   Где:  
+                   - Close, Low, High - цены закрытия, минимума и максимума  
+                   - Volume - объем торгов
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Расчет экспоненциальных скользящих средних (EMA) для A/D Line:
+                   <code>
+                     EMA(Fast) = α * A/D Line + (1 - α) * EMA(Fast-1)
+                     EMA(Slow) = β * A/D Line + (1 - β) * EMA(Slow-1)
+                   </code>
+                   Где α = 2/(FastPeriod+1), β = 2/(SlowPeriod+1)
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Осциллятор как разница EMA:
+                   <code>
+                     AdOsc = EMA(Fast) - EMA(Slow)
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация</b>:
+             <list type="bullet">
+               <item><description>Рост значений ⇒ доминирование покупателей</description></item>
+               <item><description>Падение значений ⇒ давление продавцов</description></item>
+               <item><description>Дивергенция с ценой ⇒ возможный разворот тренда</description></item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.AdOscLookback(System.Int32,System.Int32)">
+            <summary>
+            Возвращает период "просмотра назад" для осциллятора Chaikin A/D
+            </summary>
+            <param name="optInFastPeriod">Период быстрой EMA</param>
+            <param name="optInSlowPeriod">Период медленной EMA</param>
+            <returns>Минимальное количество баров для первого валидного значения</returns>
+        </member>
+        <member name="M:TALib.Functions.AdOsc``1(``0[],``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32,System.Int32)">
+            <summary>
+            Вариант метода для массивов (совместимость с абстрактным API)
+            </summary>
         </member>
     </members>
 </doc>
