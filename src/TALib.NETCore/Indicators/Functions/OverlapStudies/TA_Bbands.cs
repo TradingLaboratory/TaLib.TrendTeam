@@ -1,9 +1,14 @@
 //Файл TA_Bbands.cs
+//Группы к которым можно отнести индикатор:
+//VolatilityIndicators (существующая папка - идеальное соответствие категории)
+//OverlapStudies (альтернатива, если требуется группировка по типу индикатора)
+//TrendStrength (альтернатива для акцента на силе тренда)
+
 namespace TALib;
 public static partial class Functions
 {
     /// <summary>
-    /// Полосы Боллинджера (Скользящие исследования)
+    /// Bollinger Bands (Overlap Studies) — Полосы Боллинджера (Скользящие исследования)
     /// </summary>
     /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
     /// <param name="inRange">
@@ -128,7 +133,6 @@ public static partial class Functions
     ///   </item>
     /// </list>
     /// </remarks>
-
 
     [PublicAPI]
     public static Core.RetCode Bbands<T>(

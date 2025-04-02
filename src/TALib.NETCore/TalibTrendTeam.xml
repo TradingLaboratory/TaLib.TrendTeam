@@ -5867,6 +5867,226 @@
             Предоставляет функциональный слой для доступа к методам расчёта технических индикаторов.
             </summary>
         </member>
+        <member name="M:TALib.Functions.HtDcPeriod``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+             <summary>
+             Hilbert Transform - Dominant Cycle Period (Cycle Indicators) — Преобразование Хилберта - Доминирующий цикл (Индикаторы циклов)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Преобразование Хилберта - Доминирующий цикл определяет доминирующую длину цикла в рыночных данных.
+             Оно применяет серию преобразований для выявления периодических паттернов и их доминирующей частоты.
+             <para>
+             Функция используется в продвинутом техническом анализе для выявления циклов в финансовых временных рядах,
+             что помогает определить рыночные тренды и время для входа или выхода из позиций.
+             Функция может быть интегрирована в цикловые подходы для тайминга входов или выходов.
+             </para>
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Сглаживание входных данных с использованием взвешенного скользящего среднего (WMA) для уменьшения шума при сохранении основного сигнала.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Применение преобразования Хилберта для вычисления фазовых (I) и квадратурных (Q) компонентов для нечетных и четных ценовых баров.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычисление арктангенса компонентов Q и I для определения фазовых изменений между последовательными ценовыми барами.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Использование фазовых изменений для оценки мгновенного периода доминирующего цикла.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Применение сглаживающего фактора для стабилизации рассчитанного периода и уменьшения влияния шума и выбросов.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Выходные данные представляют собой доминирующий цикл в данных.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Меньший период указывает на более быстрые рыночные циклы, тогда как больший период сигнализирует о более медленных циклах.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Ограничения</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Функция более эффективна в цикличных или боковых рынках и может давать ненадежные результаты в условиях сильного тренда.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Выходные данные чувствительны к шумным данным; сглаживающие техники, такие как WMA, помогают минимизировать это.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.HtDcPeriodLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.HtDcPeriod``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">HtDcPeriod</see>.
+            </summary>
+            <returns>Количество периодов, необходимых до расчета первого выходного значения.</returns>
+            <remarks>См. <see cref="M:TALib.Functions.MamaLookback">MamaLookback</see> для объяснения значения "32"</remarks>
+        </member>
+        <member name="M:TALib.Functions.HtDcPeriod``1(``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.HtTrendMode``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@)">
+             <summary>
+             Hilbert Transform - Trend vs Cycle Mode (Cycle Indicators) — Преобразование Хилберта - Режим тренда против цикла (Индикаторы циклов)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outInteger">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outInteger[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Преобразование Хилберта - Режим тренда против цикла — это индикатор цикла, который определяет, находится ли рынок в трендовом состоянии или в циклическом.
+             Это достигается путем анализа доминирующих циклов в данных и сравнения их свойств с заранее определенными порогами.
+             <para>
+             Функция может помочь выбрать подходящие индикаторы для текущего режима рынка.
+             В трендовом режиме могут быть предпочтительны инструменты следования за трендом; в циклическом режиме осцилляторы могут давать лучшие результаты.
+             </para>
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Сгладить входные цены с помощью взвешенного скользящего среднего (WMA), чтобы уменьшить шум и выделить ключевые тренды.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Применить преобразование Хилберта для извлечения синфазной (I) и квадратурной (Q) компонент, которые используются для вычисления свойств доминирующего цикла.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить фазу доминирующего цикла (DC Phase) и сгладить фазу по последовательным итерациям.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Сгенерировать значения синуса и ведущего синуса с использованием сглаженной фазы DC для обнаружения циклического режима.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Проанализировать пересечения и отклонения компонент синусоидальной волны, чтобы определить, находится ли ряд в трендовом или циклическом режиме.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   <i>Трендовый режим (1)</i> указывает на устойчивое направленное движение рынка,
+                   при котором циклы играют второстепенную роль.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <i>Циклический режим (0)</i> указывает на колебания рынка в пределах четко определенного диапазона,
+                   при котором можно наблюдать доминирующие циклы.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Ограничения</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Эта функция менее эффективна на шумных или волатильных рынках, где трудно обнаружить доминирующие циклы.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Ложные срабатывания могут возникать на рынках, переходящих между трендовым и циклическим поведением.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.HtTrendModeLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.HtTrendMode``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@)">HtTrendMode</see>.
+            </summary>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+            <remarks>
+            Пропускается 31 входных данных для совместимости с Tradestation.
+            См. <see cref="M:TALib.Functions.MamaLookback">MamaLookback</see> для объяснения "32"
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.HtTrendMode``1(``0[],System.Range,System.Int32[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
         <member name="M:TALib.Functions.Add``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
             <summary>
             Векторное арифметическое сложение (Math Operators)
@@ -6093,6 +6313,152 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
+        <member name="M:TALib.Functions.Asin``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+            <summary>
+            Vector Trigonometric ASin (Math Transform) — Векторная тригонометрическая ASin (Математическое преобразование)
+            </summary>
+            <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+            <param name="inRange">
+            Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+            - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+            </param>
+            <param name="outReal">
+            Массив, содержащий ТОЛЬКО валидные значения индикатора.
+            - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+            - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+            </param>
+            <param name="outRange">
+            Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+            - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+            - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+            </param>
+            <typeparam name="T">
+            Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+            реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+            </typeparam>
+            <returns>
+            Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+            Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+            </returns>
+            <remarks>
+            ASin применяет функцию арксинуса (обратного синуса) к каждой точке данных в ряду, в основном для продвинутого математического моделирования,
+            а не для стандартного технического анализа.
+            <para>
+            Функция редко используется самостоятельно для генерации сигналов. Она может быть интегрирована в специализированные или проприетарные модели,
+            в комбинации с другими математическими преобразованиями.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.AsinLookback">
+            <summary>
+            Возвращает период предыстории для <see cref="M:TALib.Functions.Asin``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Asin</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого вычисления не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.Asin``1(``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Atan``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+            <summary>
+            Vector Trigonometric ATan (Math Transform) — Векторная тригонометрическая ATan (Математическое преобразование)
+            </summary>
+            <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+            <param name="inRange">
+            Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+            - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+            </param>
+            <param name="outReal">
+            Массив, содержащий ТОЛЬКО валидные значения индикатора.
+            - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+            - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+            </param>
+            <param name="outRange">
+            Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+            - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+            - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+            </param>
+            <typeparam name="T">
+            Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+            реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+            </typeparam>
+            <returns>
+            Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу расчета.
+            Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете, или соответствующий код ошибки в противном случае.
+            </returns>
+            <remarks>
+            ATan применяет функцию арктангенса (обратного тангенса) к каждой точке данных в ряду, в основном для продвинутого математического моделирования,
+            а не для стандартного технического анализа.
+            <para>
+            Функция редко используется самостоятельно для генерации сигналов. Она может быть интегрирована в специализированные или проприетарные модели,
+            в комбинации с другими математическими преобразованиями.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.AtanLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Atan``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Atan</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого расчета не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.Atan``1(``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Ceil``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+            <summary>
+            Vector Ceil (Math Transform) — Векторное округление вверх (Математическое преобразование)
+            </summary>
+            <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+            <param name="inRange">
+            Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+            - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+            </param>
+            <param name="outReal">
+            Массив, содержащий ТОЛЬКО валидные значения индикатора.
+            - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+            - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+            </param>
+            <param name="outRange">
+            Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+            - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+            - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+            </param>
+            <typeparam name="T">
+            Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+            реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+            </typeparam>
+            <returns>
+            Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+            Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+            </returns>
+            <remarks>
+            Округление каждой точки данных вверх до ближайшего целого числа, в основном для предварительной обработки данных.
+            <para>
+            Функция не предоставляет прямых торговых сигналов.
+            Её полезность проявляется в разработке пользовательских индикаторов или в подготовке данных для сложных преобразований.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.CeilLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Ceil``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Ceil</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого вычисления не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.Ceil``1(``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
         <member name="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
              Индекс среднего направленного движения (Индикаторы импульса)
@@ -6204,6 +6570,572 @@
             <returns>Количество периодов, необходимых до расчета первого выходного значения.</returns>
         </member>
         <member name="M:TALib.Functions.Adx``1(``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Adxr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Average Directional Movement Index Rating (Momentum Indicators) — Средний индекс направленного движения (Индикаторы импульса)
+             </summary>
+             <param name="inHigh">Входные данные максимальных цен.</param>
+             <param name="inLow">Входные данные минимальных цен.</param>
+             <param name="inClose">Входные данные закрывающих цен.</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Возвращает значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Средний индекс направленного движения (ADXR) — это сглаженная версия индикатора <see cref="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ADX</see>,
+             используемая для измерения силы тренда. Он рассчитывается как среднее значение текущего значения ADX и значения ADX из предыдущего периода.
+             ADXR дополнительно сглаживает ADX, делая его менее волатильным и более легким для интерпретации.
+             <para>
+             Функция часто используется в трендовых стратегиях для подтверждения силы тренда и фильтрации периодов низкой волатильности.
+             Она менее чувствительна к краткосрочным колебаниям цен, что делает её особенно полезной для выявления долгосрочных трендов.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Рассчитать значения ADX за указанный период времени. Подробности расчета смотрите в функции ADX.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Для каждого значения ADX усреднить его с значением ADX из предыдущего периода (смещенного на период времени):
+                   <code>
+                     ADXR = (Текущее ADX + ADX из предыдущего периода) / 2
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Значения выше 25 указывают на сильный тренд, тогда как значения ниже 20 свидетельствуют о слабом или отсутствующем тренде.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рост значения указывает на усиление тренда, а снижение — на его ослабление.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Как и ADX, ADXR не указывает направление тренда, а измеряет его силу.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.AdxrLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Adxr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Adxr</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до расчета первого выходного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Adxr``1(``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Apo``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">
+             <summary>
+             Absolute Price Oscillator (Momentum Indicators) — Абсолютный ценовой осциллятор (Индикаторы импульса)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInFastPeriod">Период для расчета быстрой скользящей средней.</param>
+             <param name="optInSlowPeriod">Период для расчета медленной скользящей средней.</param>
+             <param name="optInMAType">Тип скользящей средней.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу расчета.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Абсолютный ценовой осциллятор — это индикатор импульса, который рассчитывает разницу между двумя скользящими средними входного ряда,
+             обычно цены. Он используется для выявления трендов, импульса и потенциальных разворотов в ценовых движениях.
+             <para>
+             Функция может помочь выявить ранние признаки разворота тренда.
+             Её можно комбинировать с объемными индикаторами или мерами волатильности для дополнительного подтверждения.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Рассчитать быструю скользящую среднюю входного ряда с использованием указанного быстрого периода и типа скользящей средней.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать медленную скользящую среднюю входного ряда с использованием указанного медленного периода и типа скользящей средней.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычесть медленную скользящую среднюю из быстрой скользящей средней для вычисления APO:
+                   <code>
+                     APO = Fast MA - Slow MA
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Положительное значение указывает, что быстрая скользящая средняя выше медленной скользящей средней, что свидетельствует о восходящем импульсе.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Отрицательное значение указывает, что быстрая скользящая средняя ниже медленной скользящей средней, что свидетельствует о нисходящем импульсе.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Пересечения APO выше или ниже нулевой линии могут сигнализировать о потенциальных возможностях для покупки или продажи соответственно.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.ApoLookback(System.Int32,System.Int32,TALib.Core.MAType)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Apo``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">Apo</see>.
+            </summary>
+            <param name="optInFastPeriod">Период для расчета быстрой скользящей средней.</param>
+            <param name="optInSlowPeriod">Период для расчета медленной скользящей средней.</param>
+            <param name="optInMAType">Тип скользящей средней.</param>
+            <returns>Количество периодов, необходимых до расчета первого выходного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Apo``1(``0[],System.Range,``0[],System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Aroon``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Aroon (Momentum Indicators) — Арун (Индикаторы импульса)
+             </summary>
+             <param name="inHigh">Входные данные для расчета индикатора (максимальные цены).</param>
+             <param name="inLow">Входные данные для расчета индикатора (минимальные цены).</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/> и <paramref name="inLow"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/> и <paramref name="inLow"/>.
+             </param>
+             <param name="outAroonDown">Массив, содержащий ТОЛЬКО валидные значения индикатора Aroon Down.</param>
+             <param name="outAroonUp">Массив, содержащий ТОЛЬКО валидные значения индикатора Aroon Up.</param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/> и <paramref name="inLow"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/> и <paramref name="inLow"/>, имеющего валидное значение в <paramref name="outAroonDown"/> и <paramref name="outAroonUp"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/> и <paramref name="inLow"/>, имеющего валидное значение в <paramref name="outAroonDown"/> и <paramref name="outAroonUp"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> или <paramref name="inLow"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Индикатор Aroon является импульсным индикатором, который измеряет время между максимумами и минимумами
+             за указанный период времени для определения силы и направления тренда. Он состоит из двух компонентов:
+             Aroon Up и Aroon Down, которые вычисляются отдельно.
+             <para>
+             Функция особенно полезна для выявления разворотов тренда и оценки его силы.
+             Она также может использоваться в сочетании с другими техническими индикаторами для подтверждения торговых сигналов или фильтрации шума.
+             </para>
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Определить максимальный максимум и минимальный минимум в указанном периоде времени.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить Aroon Up:
+                   <code>
+                     Aroon Up = 100 * (Период времени - Дни с момента максимального максимума) / Период времени
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить Aroon Down:
+                   <code>
+                     Aroon Down = 100 * (Период времени - Дни с момента минимального минимума) / Период времени
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Значения близкие к 100 указывают на сильный восходящий тренд, тогда как значения близкие к 0 указывают на отсутствие недавних максимумов.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Значения близкие к 100 указывают на сильный нисходящий тренд, тогда как значения близкие к 0 указывают на отсутствие недавних минимумов.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Когда Aroon Up пересекает Aroon Down снизу вверх, это может сигнализировать о начале восходящего тренда.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Когда Aroon Down пересекает Aroon Up снизу вверх, это может сигнализировать о начале нисходящего тренда.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.AroonLookback(System.Int32)">
+            <summary>
+            Возвращает период lookback для <see cref="M:TALib.Functions.Aroon``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Int32)">Aroon</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до вычисления первого допустимого значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Aroon``1(``0[],``0[],System.Range,``0[],``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.AroonOsc``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Aroon Oscillator (Momentum Indicators) — Осциллятор Арун (Индикаторы моментума)
+             </summary>
+             <param name="inHigh">Входные данные для расчета индикатора (максимальные цены)</param>
+             <param name="inLow">Входные данные для расчета индикатора (минимальные цены)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/> и <paramref name="inLow"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/> и <paramref name="inLow"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c> и <c>inLow[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/> и <paramref name="inLow"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/> и <paramref name="inLow"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/> и <paramref name="inLow"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> и <paramref name="inLow"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Осциллятор Арун — это индикатор моментума, который измеряет разницу между индикаторами Aroon Up и Aroon Down,
+             чтобы оценить силу и направление тренда.
+             <para>
+             Функция полезна для определения силы и направления тренда и может также сигнализировать о потенциальных разворотах
+             при пересечении нулевой линии. Обычно используется в сочетании с другими техническими индикаторами
+             для повышения надежности торговых сигналов.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Определить максимальную максимум и минимальную минимум в указанном периоде времени.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать Aroon Up и Aroon Down:
+             <code>
+             Aroon Up = 100 * (Time Period - Дни с момента максимального максимума) / Time Period
+             Aroon Down = 100 * (Time Period - Дни с момента минимального минимума) / Time Period
+             </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать Осциллятор Арун как разницу между Aroon Up и Aroon Down:
+                   <code>
+                     Aroon Oscillator = Aroon Up - Aroon Down
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Положительные значения указывают на то, что Aroon Up сильнее, чем Aroon Down, что свидетельствует о восходящем тренде.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Отрицательные значения указывают на то, что Aroon Down сильнее, чем Aroon Up, что свидетельствует о нисходящем тренде.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Чем ближе значение к +100 или -100, тем сильнее соответствующий тренд.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Значения около 0 указывают на отсутствие четкого тренда или боковое движение рынка.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.AroonOscLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.AroonOsc``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">AroonOsc</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.AroonOsc``1(``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Bop``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+             <summary>
+             Balance of Power (Momentum Indicators) — Баланс Сил (Индикаторы Импульса)
+             </summary>
+             <param name="inOpen">Входные данные для цен открытия.</param>
+             <param name="inHigh">Входные данные для максимальных цен.</param>
+             <param name="inLow">Входные данные для минимальных цен.</param>
+             <param name="inClose">Входные данные для цен закрытия.</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inOpen"/>, <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inOpen"/>, <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inOpen[outRange.Start + i]</c>, <c>inHigh[outRange.Start + i]</c>, <c>inLow[outRange.Start + i]</c> и <c>inClose[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inOpen"/>, <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inOpen"/>, <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inOpen"/>, <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inOpen.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inOpen"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Баланс Сил — это импульсный индикатор, который измеряет силу покупателей по сравнению с продавцами, сравнивая цену закрытия
+             относительно цены открытия, нормализованной по торговому диапазону.
+             <para>
+             Функция может быть интегрирована с объемными или индикаторами ценового действия
+             для обнаружения тонких изменений в настроениях и усиления сигналов от других инструментов.
+             </para>
+            
+             <b>Формула расчета</b>:
+             <code>
+               BOP = (Close - Open) / (High - Low)
+             </code>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Положительное значение указывает на доминирование покупателей, где цена закрытия выше цены открытия.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Отрицательное значение указывает на доминирование продавцов, где цена закрытия ниже цены открытия.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Значение близкое к нулю указывает на равновесие между покупателями и продавцами.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.BopLookback">
+            <summary>
+            Возвращает период задержки для <see cref="M:TALib.Functions.Bop``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Bop</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого расчета не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.Bop``1(``0[],``0[],``0[],``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Cci``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Commodity Channel Index (Momentum Indicators) — Индекс Товарного Канала (Индикаторы Импульса)
+             </summary>
+             <param name="inHigh">Входные максимальные цены (High).</param>
+             <param name="inLow">Входные минимальные цены (Low).</param>
+             <param name="inClose">Входные цены закрытия (Close).</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>, <c>inLow[outRange.Start + i]</c> и <c>inClose[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Индекс Товарного Канала (CCI) — это импульсный индикатор, который измеряет отклонение типичной цены
+             (среднее значение максимальной, минимальной и закрывающей цены) от её скользящего среднего за указанный период времени.
+             <para>
+             Он часто используется для определения перекупленности и перепроданности, а также потенциальных разворотов тренда.
+             Комбинирование его с трендовыми индикаторами может помочь избежать реакции против сильных существующих трендов.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Вычислить Типичную Цену (TP) для каждого периода:
+                   <code>
+                     TP = (High + Low + Close) / 3
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать скользящее среднее (MA) Типичной Цены за указанный период времени.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить Среднее Отклонение Типичной Цены от скользящего среднего.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать CCI:
+                   <code>
+                     CCI = (TP - MA) / (0.015 * Среднее Отклонение)
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Положительное значение указывает на то, что цена выше скользящего среднего, что свидетельствует о бычьем импульсе.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Отрицательное значение указывает на то, что цена ниже скользящего среднего, что свидетельствует о медвежьем импульсе.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Значения выше +100 или ниже -100 обычно используются как пороги для перекупленности или перепроданности.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.CciLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Cci``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Cci</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Cci``1(``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
             Для совместимости с абстрактным API
             </remarks>
@@ -6481,6 +7413,147 @@
             </returns>
         </member>
         <member name="M:TALib.Functions.Accbands``1(``0[],``0[],``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Bbands``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Double,System.Double,TALib.Core.MAType)">
+             <summary>
+             Bollinger Bands (Overlap Studies) — Полосы Боллинджера (Скользящие исследования)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             <para>- Если не указан, обрабатывается весь массив <paramref name="inReal"/>.</para>
+             </param>
+             <param name="outRealUpperBand">
+             Массив, содержащий ТОЛЬКО валидные значения верхней полосы.
+             <para>- Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).</para>
+             <para>- Каждый элемент <c>outRealUpperBand[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.</para>
+             </param>
+             <param name="outRealMiddleBand">
+             Массив, содержащий ТОЛЬКО валидные значения средней полосы.
+             <para>- Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).</para>
+             <para>- Каждый элемент <c>outRealMiddleBand[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.</para>
+             </param>
+             <param name="outRealLowerBand">
+             Массив, содержащий ТОЛЬКО валидные значения нижней полосы.
+             <para>- Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).</para>
+             <para>- Каждый элемент <c>outRealLowerBand[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.</para>
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             <para>- <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outRealUpperBand"/>, <paramref name="outRealMiddleBand"/> и <paramref name="outRealLowerBand"/>.</para>
+             <para>- <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outRealUpperBand"/>, <paramref name="outRealMiddleBand"/> и <paramref name="outRealLowerBand"/>.</para>
+             <para>- Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.</para>
+             <para>- Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.</para>
+             </param>
+             <param name="optInTimePeriod">Период расчета.</param>
+             <param name="optInNbDevUp">
+             Множитель стандартного отклонения для верхней полосы:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Большие значения увеличивают расстояние от средней полосы, снижая чувствительность к незначительным колебаниям цены.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Меньшие значения сокращают расстояние, повышая реакцию на изменения цены.
+                 </description>
+               </item>
+             </list>
+             <para>Значения выше 5 редко используются из-за потери практической значимости.</para>
+             </param>
+             <param name="optInNbDevDn">
+             Множитель стандартного отклонения для нижней полосы:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Большие значения увеличивают расстояние от средней полосы, снижая вероятность сигналов перепроданности.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Меньшие значения сокращают расстояние, повышая чувствительность к снижению цены.
+                 </description>
+               </item>
+             </list>
+             <para>Значения выше 5 редко используются из-за потери практической значимости.</para>
+             </param>
+             <param name="optInMAType">Тип скользящей средней.</param>
+             <typeparam name="T">
+             Числовой тип данных (обычно <see langword="float"/> или <see langword="double"/>),
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Код результата <see cref="T:TALib.Core.RetCode"/>.
+             <para>Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете или код ошибки.</para>
+             </returns>
+             <remarks>
+             Полосы Боллинджера — индикатор на основе волатильности, использующий скользящую среднюю и стандартные отклонения
+             для формирования верхней и нижней "полос" вокруг цены. Полосы расширяются/сужаются при изменении волатильности,
+             предоставляя информацию о потенциальных зонах перекупленности/перепроданности, периодах консолидации и прорывах.
+             <para>Используется в торговых стратегиях для идентификации возможностей прорыва, продолжения тренда или разворота.</para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Средняя полоса = скользящая средняя входных значений за указанный период.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Стандартное отклонение входных значений за тот же период.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Верхняя/нижняя полосы рассчитываются по формулам:
+             <code>
+             Upper Band = Middle Band + (Standard Deviation * NbDevUp)
+             Lower Band = Middle Band - (Standard Deviation * NbDevDn)
+             </code>
+                   <para>Где:</para>
+                   <list type="bullet">
+                     <item><description>Middle Band — средняя полоса (скользящая средняя)</description></item>
+                     <item><description>Standard Deviation — стандартное отклонение</description></item>
+                     <item><description>NbDevUp/NbDevDn — множители для верхней/нижней полос</description></item>
+                   </list>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Приближение цены к верхней полосе указывает на возможную перекупленность (риск коррекции).
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Приближение цены к нижней полосе указывает на возможную перепроданность (потенциал роста).
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Сужение полос (низкая волатильность) предшествует прорывам. Расширение (высокая волатильность) — подтверждает тренд.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.BbandsLookback(System.Int32,TALib.Core.MAType)">
+            <summary>
+            Возвращает lookback-период для <see cref="M:TALib.Functions.Bbands``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Double,System.Double,TALib.Core.MAType)"/>.
+            </summary>
+            <param name="optInTimePeriod">Период расчета.</param>
+            <param name="optInMAType">Тип скользящей средней.</param>
+            <returns>Количество периодов, необходимых для расчета первого валидного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Bbands``1(``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32,System.Double,System.Double,TALib.Core.MAType)">
             <remarks>
             Для совместимости с абстрактным API
             </remarks>
@@ -6861,606 +7934,66 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.Adxr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+        <member name="M:TALib.Functions.Beta``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
-             Average Directional Movement Index Rating (Momentum Indicators)
+             Beta (Statistic Functions) — Бета (Статистические функции)
              </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inClose">A span of input close prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Average Directional Movement Index Rating is a smoothed version of the <see cref="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ADX</see> indicator,
-             used to measure the strength of a trend. It is calculated as the average of the current ADX value and the ADX value from a
-             previous period. The ADXR further smooths the ADX, making it less volatile and easier to interpret.
-             <para>
-             The function is commonly used in trend-following strategies to confirm trend strength and filter out periods of low volatility.
-             It is less reactive to short-term price fluctuations, making it particularly useful for identifying longer-term trends.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Calculate the ADX values over the specified time period. Refer to the ADX function for details on the calculation.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   For each ADX value, average it with the ADX value from a previous period (offset by the time period):
-                   <code>
-                     ADXR = (Current ADX + ADX from Previous Period) / 2
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Values above 25 indicate a strong trend, while values below 20 suggest a weak or non-existent trend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A rising value suggests a strengthening trend, while a falling value indicates a weakening trend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Like ADX, the ADXR does not indicate the direction of the trend but measures its strength.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.AdxrLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Adxr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Adxr</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Adxr``1(``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Apo``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">
-             <summary>
-             Absolute Price Oscillator (Momentum Indicators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInFastPeriod">The time period for calculating the fast moving average.</param>
-             <param name="optInSlowPeriod">The time period for calculating the slow moving average.</param>
-             <param name="optInMAType">The moving average type.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Absolute Price Oscillator is a momentum indicator that calculates the difference between two moving averages of an input series,
-             typically the price. It is used to identify trends, momentum, and potential reversals in price movements.
-             <para>
-             The function can help identify early signs of trend reversals.
-             It may be combined with volume indicators or volatility measures to provide additional confirmation.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Calculate the fast moving average of the input series using the specified fast period and moving average type.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the slow moving average of the input series using the specified slow period and moving average type.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Subtract the slow moving average from the fast moving average to compute the APO:
-                   <code>
-                     APO = Fast MA - Slow MA
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A positive value indicates that the fast moving average is above the slow moving average, suggesting upward momentum.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A negative value indicates that the fast moving average is below the slow moving average, suggesting downward momentum.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Crossovers of the APO above or below the zero line can signal potential buy or sell opportunities, respectively.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.ApoLookback(System.Int32,System.Int32,TALib.Core.MAType)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Apo``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">Apo</see>.
-            </summary>
-            <param name="optInFastPeriod">The time period for calculating the fast moving average.</param>
-            <param name="optInSlowPeriod">The time period for calculating the slow moving average.</param>
-            <param name="optInMAType">The moving average type.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Apo``1(``0[],System.Range,``0[],System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Aroon``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Aroon (Momentum Indicators)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outAroonDown">A span to store the calculated Aroon Down values.</param>
-             <param name="outAroonUp">A span to store the calculated Aroon Up values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             The Aroon indicator is a momentum-based indicator that measures the time between highs and lows
-             over a specified time period to identify the strength and direction of a trend. It consists of two components:
-             Aroon Up and Aroon Down, which are calculated separately.
-             <para>
-             The function is particularly useful for identifying trend reversals and assessing trend strength.
-             It can also be used in conjunction with other technical indicators to confirm trading signals or filter out noise.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Identify the highest high and lowest low within the specified time period.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate Aroon Up:
-                   <code>
-                     Aroon Up = 100 * (Time Period - Days Since Highest High) / Time Period
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate Aroon Down:
-                   <code>
-                     Aroon Down = 100 * (Time Period - Days Since Lowest Low) / Time Period
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Values close to 100 indicate a strong upward trend, while values near 0 indicate no recent highs.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Values close to 100 indicate a strong downward trend, while values near 0 indicate no recent lows.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   When Aroon Up crosses above Aroon Down, it may signal the beginning of an upward trend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   When Aroon Down crosses above Aroon Up, it may signal the beginning of a downward trend.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.AroonLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Aroon``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Int32)">Aroon</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Aroon``1(``0[],``0[],System.Range,``0[],``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.AroonOsc``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Aroon Oscillator (Momentum Indicators)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Aroon Oscillator is a momentum indicator that measures the difference between the Aroon Up and Aroon Down indicators
-             to assess the strength and direction of a trend.
-             <para>
-             The function is useful for identifying trend strength and direction and can also signal potential reversals
-             when crossing above or below the zero line. It is commonly used in conjunction with other technical indicators
-             to improve the reliability of trading signals.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Identify the highest high and lowest low within the specified time period.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate Aroon Up and Aroon Down:
-             <code>
-             Aroon Up = 100 * (Time Period - Days Since Highest High) / Time Period
-             Aroon Down = 100 * (Time Period - Days Since Lowest Low) / Time Period
-             </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the Aroon Oscillator as the difference between Aroon Up and Aroon Down:
-                   <code>
-                     Aroon Oscillator = Aroon Up - Aroon Down
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Positive values indicate that the Aroon Up is stronger than the Aroon Down, suggesting an upward trend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Negative values indicate that the Aroon Down is stronger than the Aroon Up, suggesting a downward trend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The closer the value is to +100 or -100, the stronger the respective trend.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Values around 0 suggest a lack of clear trend or a sideways market.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.AroonOscLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.AroonOsc``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">AroonOsc</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.AroonOsc``1(``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Asin``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-            <summary>
-            Vector Trigonometric ASin (Math Transform)
-            </summary>
-            <param name="inReal">A span of input values.</param>
-            <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-            <param name="outReal">A span to store the calculated values.</param>
-            <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-            <typeparam name="T">
-            The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-            implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-            </typeparam>
-            <returns>
-            A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-            Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-            </returns>
-            <remarks>
-            ASin applies the arcsine (inverse sine) function to each data point in a series, primarily for advanced mathematical modeling,
-            rather than standard technical analysis.
-            <para>
-            The function is rarely used alone for generating signals. It may be integrated into specialized or proprietary models,
-            in combination with other mathematical transformations.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.AsinLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Asin``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Asin</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Asin``1(``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Atan``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-            <summary>
-            Vector Trigonometric ATan (Math Transform)
-            </summary>
-            <param name="inReal">A span of input values.</param>
-            <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-            <param name="outReal">A span to store the calculated values.</param>
-            <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-            <typeparam name="T">
-            The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-            implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-            </typeparam>
-            <returns>
-            A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-            Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-            </returns>
-            <remarks>
-            ATan applies the arctangent (inverse tangent) function to each data point in a series, primarily for advanced mathematical modeling,
-            rather than standard technical analysis.
-            <para>
-            The function is rarely used alone for generating signals. It may be integrated into specialized or proprietary models,
-            in combination with other mathematical transformations.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.AtanLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Atan``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Atan</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Atan``1(``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Bbands``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Double,System.Double,TALib.Core.MAType)">
-             <summary>
-             Полосы Боллинджера (Скользящие исследования)
-             </summary>
-             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inReal0">Входные данные для расчета индикатора (цены акций или других финансовых инструментов)</param>
+             <param name="inReal1">Входные данные для расчета индикатора (цены бенчмарка или рыночные цены)</param>
              <param name="inRange">
-             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
-             <para>- Если не указан, обрабатывается весь массив <paramref name="inReal"/>.</para>
+             Диапазон обрабатываемых данных в <paramref name="inReal0"/> и <paramref name="inReal1"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal0"/> и <paramref name="inReal1"/>.
              </param>
-             <param name="outRealUpperBand">
-             Массив, содержащий ТОЛЬКО валидные значения верхней полосы.
-             <para>- Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).</para>
-             <para>- Каждый элемент <c>outRealUpperBand[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.</para>
-             </param>
-             <param name="outRealMiddleBand">
-             Массив, содержащий ТОЛЬКО валидные значения средней полосы.
-             <para>- Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).</para>
-             <para>- Каждый элемент <c>outRealMiddleBand[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.</para>
-             </param>
-             <param name="outRealLowerBand">
-             Массив, содержащий ТОЛЬКО валидные значения нижней полосы.
-             <para>- Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).</para>
-             <para>- Каждый элемент <c>outRealLowerBand[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.</para>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal0[outRange.Start + i]</c>.
              </param>
              <param name="outRange">
-             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
-             <para>- <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outRealUpperBand"/>, <paramref name="outRealMiddleBand"/> и <paramref name="outRealLowerBand"/>.</para>
-             <para>- <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outRealUpperBand"/>, <paramref name="outRealMiddleBand"/> и <paramref name="outRealLowerBand"/>.</para>
-             <para>- Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.</para>
-             <para>- Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.</para>
+             Диапазон индексов в <paramref name="inReal0"/> и <paramref name="inReal1"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal0"/> и <paramref name="inReal1"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal0"/> и <paramref name="inReal1"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal0.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal0"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
              </param>
-             <param name="optInTimePeriod">Период расчета.</param>
-             <param name="optInNbDevUp">
-             Множитель стандартного отклонения для верхней полосы:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Большие значения увеличивают расстояние от средней полосы, снижая чувствительность к незначительным колебаниям цены.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Меньшие значения сокращают расстояние, повышая реакцию на изменения цены.
-                 </description>
-               </item>
-             </list>
-             <para>Значения выше 5 редко используются из-за потери практической значимости.</para>
-             </param>
-             <param name="optInNbDevDn">
-             Множитель стандартного отклонения для нижней полосы:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Большие значения увеличивают расстояние от средней полосы, снижая вероятность сигналов перепроданности.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Меньшие значения сокращают расстояние, повышая чувствительность к снижению цены.
-                 </description>
-               </item>
-             </list>
-             <para>Значения выше 5 редко используются из-за потери практической значимости.</para>
-             </param>
-             <param name="optInMAType">Тип скользящей средней.</param>
+             <param name="optInTimePeriod">Период времени.</param>
              <typeparam name="T">
-             Числовой тип данных (обычно <see langword="float"/> или <see langword="double"/>),
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
              реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
              </typeparam>
              <returns>
-             Код результата <see cref="T:TALib.Core.RetCode"/>.
-             <para>Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете или код ошибки.</para>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
              </returns>
              <remarks>
-             Полосы Боллинджера — индикатор на основе волатильности, использующий скользящую среднюю и стандартные отклонения
-             для формирования верхней и нижней "полос" вокруг цены. Полосы расширяются/сужаются при изменении волатильности,
-             предоставляя информацию о потенциальных зонах перекупленности/перепроданности, периодах консолидации и прорывах.
-             <para>Используется в торговых стратегиях для идентификации возможностей прорыва, продолжения тренда или разворота.</para>
+             Функция Бета рассчитывает коэффициент бета, который измеряет волатильность акции относительно бенчмарка.
+             <para>
+             Функция может использоваться в управлении рисками и выборе портфеля.
+             Комбинирование с другими мерами риска или методами нормализации может оптимизировать выбор инструментов.
+             </para>
             
-             <b>Этапы расчета</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Средняя полоса = скользящая средняя входных значений за указанный период.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Стандартное отклонение входных значений за тот же период.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Верхняя/нижняя полосы рассчитываются по формулам:
+             <b>Формула расчета</b>:
              <code>
-             Upper Band = Middle Band + (Standard Deviation * NbDevUp)
-             Lower Band = Middle Band - (Standard Deviation * NbDevDn)
+               Beta = Covariance(Security, Market) / Variance(Market)
              </code>
-                   <para>Где:</para>
-                   <list type="bullet">
-                     <item><description>Middle Band — средняя полоса (скользящая средняя)</description></item>
-                     <item><description>Standard Deviation — стандартное отклонение</description></item>
-                     <item><description>NbDevUp/NbDevDn — множители для верхней/нижней полос</description></item>
-                   </list>
-                 </description>
-               </item>
-             </list>
+             где ковариация и дисперсия выводятся из процентных изменений цен акции и рынка
+             за указанный период времени.
             
              <b>Интерпретация значений</b>:
              <list type="bullet">
                <item>
                  <description>
-                   Приближение цены к верхней полосе указывает на возможную перекупленность (риск коррекции).
+                   Значение 1 указывает, что цена акции движется вместе с рынком.
                  </description>
                </item>
                <item>
                  <description>
-                   Приближение цены к нижней полосе указывает на возможную перепроданность (потенциал роста).
+                   Значение больше 1 предполагает, что акция более волатильна, чем рынок.
                  </description>
                </item>
                <item>
                  <description>
-                   Сужение полос (низкая волатильность) предшествует прорывам. Расширение (высокая волатильность) — подтверждает тренд.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.BbandsLookback(System.Int32,TALib.Core.MAType)">
-            <summary>
-            Возвращает lookback-период для <see cref="M:TALib.Functions.Bbands``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Double,System.Double,TALib.Core.MAType)"/>.
-            </summary>
-            <param name="optInTimePeriod">Период расчета.</param>
-            <param name="optInMAType">Тип скользящей средней.</param>
-            <returns>Количество периодов, необходимых для расчета первого валидного значения.</returns>
-        </member>
-        <member name="M:TALib.Functions.Bbands``1(``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32,System.Double,System.Double,TALib.Core.MAType)">
-            <remarks>
-            Для совместимости с абстрактным API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Beta``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Beta (Statistic Functions)
-             </summary>
-             <param name="inReal0">A span of input security or stock prices.</param>
-             <param name="inReal1">A span of input benchmark or market prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Beta function calculates the beta coefficient, which measures the volatility of a security relative to a benchmark index.
-             <para>
-             The function can be used in risk management and portfolio selection.
-             Combining it with other risk measures or normalization techniques may optimize instrument choices.
-             </para>
-            
-             <b>Calculation formula</b>:
-             <code>
-               Beta = Covariance(Security, Market) / Variance(Market)
-             </code>
-             where the covariance and variance are derived from the percentage changes in the security's and market's prices
-             over a specified time period.
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A value of 1 indicates that the security's price moves with the market.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A value greater than 1 suggests that the security is more volatile than the market.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A value less than 1 indicates that the security is less volatile than the market.
+                   Значение меньше 1 указывает, что акция менее волатильна, чем рынок.
                  </description>
                </item>
              </list>
@@ -7468,201 +8001,14 @@
         </member>
         <member name="M:TALib.Functions.BetaLookback(System.Int32)">
             <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Beta``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Beta</see>.
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Beta``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Beta</see>.
             </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
         </member>
         <member name="M:TALib.Functions.Beta``1(``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Bop``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-             <summary>
-             Balance of Power (Momentum Indicators)
-             </summary>
-             <param name="inOpen">A span of input close prices.</param>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inClose">A span of input close prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Balance of Power is a momentum indicator that measures the strength of buyers versus sellers by comparing the close price
-             relative to the open price, normalized by the trading range.
-             <para>
-             The function can be integrated with volume-based or price-action indicators
-             to detect subtle sentiment changes and reinforce signals from other tools.
-             </para>
-            
-             <b>Calculation formula</b>:
-             <code>
-               BOP = (Close - Open) / (High - Low)
-             </code>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A positive value indicates buyer dominance, where the close price is higher than the open price.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A negative value indicates seller dominance, where the close price is lower than the open price.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A value near zero suggests equilibrium between buyers and sellers.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.BopLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Bop``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Bop</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Bop``1(``0[],``0[],``0[],``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Cci``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Commodity Channel Index (Momentum Indicators)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inClose">A span of input close prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Commodity Channel Index is a momentum indicator that measures the deviation of the typical price
-             (average of high, low, and close) from its moving average over a specified time period.
-             <para>
-             It is commonly used to identify overbought and oversold conditions, as well as potential trend reversals.
-             Combining it with trend indicators can help avoid reacting against strong prevailing trends.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Compute the Typical Price (TP) for each period:
-                   <code>
-                     TP = (High + Low + Close) / 3
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the moving average (MA) of the Typical Price over the specified time period.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the Mean Deviation of the Typical Price from the moving average.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the CCI:
-                   <code>
-                     CCI = (TP - MA) / (0.015 * Mean Deviation)
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A positive value indicates that the price is above the moving average, suggesting bullish momentum.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A negative value indicates that the price is below the moving average, suggesting bearish momentum.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Values above +100 or below -100 are typically used as thresholds for overbought or oversold conditions.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.CciLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Cci``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Cci</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Cci``1(``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Ceil``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-            <summary>
-            Vector Ceil (Math Transform)
-            </summary>
-            <param name="inReal">A span of input values.</param>
-            <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-            <param name="outReal">A span to store the calculated values.</param>
-            <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-            <typeparam name="T">
-            The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-            implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-            </typeparam>
-            <returns>
-            A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-            Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-            </returns>
-            <remarks>
-            Ceil rounds each data point up to the nearest integer, primarily for data preprocessing.
-            <para>
-            The function does not provide direct trading signals.
-            Its usefulness arises in custom indicator development or in preparing data for complex transformations.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.CeilLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Ceil``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Ceil</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Ceil``1(``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
+            Для совместимости с абстрактным API
             </remarks>
         </member>
         <member name="M:TALib.Functions.Cmo``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
@@ -8200,101 +8546,6 @@
             For compatibility with abstract API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.HtDcPeriod``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-             <summary>
-             Hilbert Transform - Dominant Cycle Period (Cycle Indicators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Hilbert Transform - Dominant Cycle Period identifies the dominant cycle length in market data.
-             It applies a series of transformations to identify periodic patterns and their dominant frequency.
-             <para>
-             The function is used in advanced technical analysis to identify cycles in financial time series data, helping to determine
-             market trends and timing for entry or exit positions. The function can be integrated into cycle-based approaches
-             to time entries or exits.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Smooth the input data using a weighted moving average (WMA) to reduce noise while preserving the underlying signal.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Apply the Hilbert Transform to compute in-phase (I) and quadrature (Q) components for odd and even price bars.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the arctangent of Q and I components to compute phase changes between successive price bars.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Use the phase change to estimate the instantaneous period of the dominant cycle.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Apply a smoothing factor to stabilize the calculated period and reduce the impact of noise and outliers.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The output represents the dominant cycle period in the data.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A smaller period indicates faster market cycles, while a larger period signals slower cycles.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Limitations</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The function is more effective in cyclical or ranging markets and may produce unreliable results in strong trending conditions.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The output is sensitive to noisy data; smoothing techniques, such as WMA, help mitigate this.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.HtDcPeriodLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.HtDcPeriod``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">HtDcPeriod</see>.
-            </summary>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-            <remarks>See <see cref="M:TALib.Functions.MamaLookback">MamaLookback</see> for an explanation of the "32"</remarks>
-        </member>
-        <member name="M:TALib.Functions.HtDcPeriod``1(``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
         <member name="M:TALib.Functions.HtDcPhase``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
              <summary>
              Hilbert Transform - Dominant Cycle Phase (Cycle Indicators)
@@ -8699,106 +8950,6 @@
             </remarks>
         </member>
         <member name="M:TALib.Functions.HtTrendline``1(``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.HtTrendMode``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@)">
-             <summary>
-             Hilbert Transform - Trend vs Cycle Mode (Cycle Indicators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outInteger">A span to store the calculated mode values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Hilbert Transform - Trend vs Cycle Mode is a cycle indicator that determines whether the market is in a trending state or
-             a cyclic state. It achieves this by analyzing dominant cycles in the data and
-             comparing their properties against predefined thresholds.
-             <para>
-             The function can help select appropriate indicators for the current market mode.
-             In trend mode, trend-following tools may be favored; in cycle mode, oscillators may yield better results.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Smooth the input prices using a weighted moving average (WMA) to reduce noise and emphasize key trends.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Apply the Hilbert Transform to extract in-phase (I) and quadrature (Q) components, which are used to calculate the dominant cycle properties.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the dominant cycle phase (DC Phase) and smooth the phase over successive iterations.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Generate sine and leading sine values using the smoothed DC phase for cycle mode detection.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Analyze crossings and deviations of the sine wave components to determine whether the series is in a trend or cycle mode.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A <i>trend mode (1)</i> is indicated when the market shows sustained directional movement,
-                   with cycles playing a secondary role.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A <i>cycle mode (0)</i> is indicated when the market oscillates within a well-defined range,
-                   and dominant cycles can be observed.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Limitations</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   This function is less effective in noisy or volatile markets where dominant cycles are hard to detect.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                    False positives may occur in markets transitioning between trending and cyclic behavior.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.HtTrendModeLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.HtTrendMode``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@)">HtTrendMode</see>.
-            </summary>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-            <remarks>
-            31 inputs are skipped, for compatibility with Tradestation.
-            See <see cref="M:TALib.Functions.MamaLookback">MamaLookback</see> for an explanation of the "32"
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.HtTrendMode``1(``0[],System.Range,System.Int32[],System.Range@)">
             <remarks>
             For compatibility with abstract API
             </remarks>

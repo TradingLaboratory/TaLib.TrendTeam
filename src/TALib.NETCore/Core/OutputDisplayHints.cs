@@ -1,4 +1,6 @@
-﻿namespace TALib;
+//Название файла: OutputDisplayHints.cs
+
+namespace TALib;
 
 public static partial class Core
 {
