@@ -7153,6 +7153,101 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
+        <member name="M:TALib.Functions.Ln``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+            <summary>
+            Vector Log Natural (Math Transform) — Векторный натуральный логарифм (Математическое преобразование)
+            </summary>
+            <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+            <param name="inRange">
+            Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+            - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+            </param>
+            <param name="outReal">
+            Массив, содержащий ТОЛЬКО валидные значения индикатора.
+            - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+            - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+            </param>
+            <param name="outRange">
+            Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+            - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+            - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+            </param>
+            <typeparam name="T">
+            Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+            реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+            </typeparam>
+            <returns>
+            Возвращает значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успешность или неудачу вычисления.
+            Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+            </returns>
+            <remarks>
+            LN применяет натуральный логарифм к данным, что полезно в статистических и волатильных анализах, а не для прямых торговых сигналов.
+            <para>
+            Функция может быть интегрирована в алгоритмические модели или расчеты логарифмических доходностей.
+            Использование её вместе с другими статистическими мерами может уточнить оценки волатильности или доходности.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.LnLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Ln``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Ln</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого расчета не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.Ln``1(``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Log10``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+            <summary>
+            Log10 (Math Transform) — Логарифм по основанию 10 (Математическое преобразование)
+            </summary>
+            <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+            <param name="inRange">
+            Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+            - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+            </param>
+            <param name="outReal">
+            Массив, содержащий ТОЛЬКО валидные значения индикатора.
+            - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+            - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+            </param>
+            <param name="outRange">
+            Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+            - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+            - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+            </param>
+            <typeparam name="T">
+            Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+            реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+            </typeparam>
+            <returns>
+            Возвращает значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+            Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+            </returns>
+            <remarks>
+            LOG10 применяет логарифмическое преобразование по основанию 10, аналогичное LN.
+            <para>
+            Функция может помочь в нормализации масштаба. Использование её в более широких количественных стратегиях может улучшить интерпретацию данных и их сопоставимость.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Log10Lookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Log10``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Log10</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого вычисления не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.Log10``1(``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
         <member name="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
              Индекс среднего направленного движения (Индикаторы импульса)
@@ -8581,9 +8676,9 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.LinearReg``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+        <member name="M:TALib.Functions.Kama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
-             Линейная регрессия (статистические функции)
+             Kaufman Adaptive Moving Average (Overlap Studies) — Адаптивное скользящее среднее Кауфмана (Перекрывающиеся исследования)
              </summary>
              <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
              <param name="inRange">
@@ -8602,69 +8697,77 @@
              - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
              - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
              </param>
-             <param name="optInTimePeriod">Период расчета (по умолчанию 14).</param>
+             <param name="optInTimePeriod">Период времени.</param>
              <typeparam name="T">
-             Числовой тип данных (например, float или double),
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
              реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
              </typeparam>
              <returns>
-             Код возврата <see cref="T:TALib.Core.RetCode"/>:
-             <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете,
-             иначе код ошибки.
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее успешность или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении или соответствующий код ошибки в противном случае.
              </returns>
              <remarks>
-             Функция строит линию тренда методом наименьших квадратов для заданного периода.
+             Адаптивное скользящее среднее Кауфмана (KAMA) разработано для адаптации к волатильности рынка.
+             Оно корректирует свой сглаживающий коэффициент на основе коэффициента эффективности, который рассчитывается как отношение направления цены
+             к волатильности цены за указанный период. Это позволяет KAMA быть более чувствительным во время трендов и менее чувствительным во время консолидаций.
              <para>
-             Результат показывает прогнозируемое значение на последнем баре периода,
-             что помогает определить направление тренда.
+             Функция может уменьшить шум и ложные сигналы. Благодаря своей адаптивной природе, KAMA может уменьшить запаздывание по сравнению с традиционными скользящими средними,
+             что делает его полезным для выявления трендов и избегания ложных сигналов.
              </para>
             
              <b>Этапы расчета</b>:
              <list type="number">
                <item>
                  <description>
-                   Вычисление сумм:
-                   - X (индексы элементов),
-                   - X² (квадраты индексов),
-                   - X*Y (произведение индексов и значений).
+                   Расчет коэффициента эффективности (ER):
+                   <code>
+                     ER = Abs(PriceChange) / Sum(Abs(PriceChange over TimePeriod))
+                   </code>
+                   где PriceChange — разница между текущей ценой и ценой `TimePeriod` назад.
                  </description>
                </item>
                <item>
                  <description>
-                   Расчет наклона (m) по формуле:
-                   <code>m = (nΣXY - ΣXΣY) / (nΣX² - (ΣX)²)</code>
+                   Расчет сглаживающей константы (SC):
+                   <code>
+                     SC = [ER * (FastestSC - SlowestSC) + SlowestSC]^2
+                   </code>
+                   где FastestSC и SlowestSC — константы, обычно выводимые из короткого и длинного сглаживающих периодов соответственно.
                  </description>
                </item>
                <item>
                  <description>
-                   Расчет смещения (b) по формуле:
-                   <code>b = (ΣY - mΣX) / n</code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Прогноз на последнем баре периода:
-                   <code>y = b + m*(n-1)</code>
+                   Применение SC для расчета KAMA:
+                   <code>
+                     KAMA = PreviousKAMA + SC * (Price - PreviousKAMA)
+                   </code>
                  </description>
                </item>
              </list>
             
-             <b>Интерпретация</b>:
+             <b>Интерпретация значений</b>:
              <list type="bullet">
-               <item><description>Рост значений → восходящий тренд</description></item>
-               <item><description>Падение значений → нисходящий тренд</description></item>
-               <item><description>Горизонтальная линия → отсутствие тренда</description></item>
+               <item>
+                 <description>
+                   Рост KAMA указывает на восходящий тренд, особенно когда он быстро реагирует на увеличение цен.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Плоский или снижающийся KAMA указывает на консолидацию или нисходящий тренд.
+                 </description>
+               </item>
              </list>
              </remarks>
         </member>
-        <member name="M:TALib.Functions.LinearRegLookback(System.Int32)">
+        <member name="M:TALib.Functions.KamaLookback(System.Int32)">
             <summary>
-            Возвращает период lookback для функции <see cref="M:TALib.Functions.LinearReg``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)"/>.
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Kama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Kama</see>.
             </summary>
-            <param name="optInTimePeriod">Период расчета.</param>
-            <returns>Количество периодов, необходимых для первого расчета.</returns>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до расчета первого выходного значения.</returns>
         </member>
-        <member name="M:TALib.Functions.LinearReg``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
+        <member name="M:TALib.Functions.Kama``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
             Для совместимости с абстрактным API
             </remarks>
@@ -9128,136 +9231,153 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.Kama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+        <member name="M:TALib.Functions.LinearReg``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
-             Kaufman Adaptive Moving Average (Overlap Studies)
+             Линейная регрессия (статистические функции)
              </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период расчета (по умолчанию 14).</param>
              <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
+             Числовой тип данных (например, float или double),
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
              </typeparam>
              <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+             Код возврата <see cref="T:TALib.Core.RetCode"/>:
+             <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете,
+             иначе код ошибки.
              </returns>
              <remarks>
-             Kaufman Adaptive Moving Average is a moving average designed to adapt to market volatility.
-             It adjusts its smoothing factor based on the efficiency ratio, which is calculated as the ratio of price direction
-             to price volatility over a specified period. This allows KAMA to be more responsive during trends and less sensitive
-             during consolidations.
+             Функция строит линию тренда методом наименьших квадратов для заданного периода.
              <para>
-             The function can reduce noise and whipsaws. Due to its adaptive nature, KAMA can reduce lag compared to traditional moving averages,
-             making it useful for identifying trends and avoiding false signals.
+             Результат показывает прогнозируемое значение на последнем баре периода,
+             что помогает определить направление тренда.
              </para>
             
-             <b>Calculation steps</b>:
+             <b>Этапы расчета</b>:
              <list type="number">
                <item>
                  <description>
-                   Compute the Efficiency Ratio (ER):
-                   <code>
-                     ER = Abs(PriceChange) / Sum(Abs(PriceChange over TimePeriod))
-                   </code>
-                   where PriceChange is the difference between the current price and the price `TimePeriod` ago.
+                   Вычисление сумм:
+                   - X (индексы элементов),
+                   - X² (квадраты индексов),
+                   - X*Y (произведение индексов и значений).
                  </description>
                </item>
                <item>
                  <description>
-                   Compute the Smoothing Constant (SC):
-                   <code>
-                     SC = [ER * (FastestSC - SlowestSC) + SlowestSC]^2
-                   </code>
-                   where FastestSC and SlowestSC are constants typically derived from a short and long smoothing period, respectively.
+                   Расчет наклона (m) по формуле:
+                   <code>m = (nΣXY - ΣXΣY) / (nΣX² - (ΣX)²)</code>
                  </description>
                </item>
                <item>
                  <description>
-                   Apply the SC to calculate the KAMA:
-                   <code>
-                     KAMA = PreviousKAMA + SC * (Price - PreviousKAMA)
-                   </code>
+                   Расчет смещения (b) по формуле:
+                   <code>b = (ΣY - mΣX) / n</code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Прогноз на последнем баре периода:
+                   <code>y = b + m*(n-1)</code>
                  </description>
                </item>
              </list>
             
-             <b>Value interpretation</b>:
+             <b>Интерпретация</b>:
              <list type="bullet">
-               <item>
-                 <description>
-                   A rising KAMA indicates an uptrend, particularly when it reacts swiftly to price increases.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A flat or declining KAMA suggests a consolidation or downtrend.
-                 </description>
-               </item>
+               <item><description>Рост значений → восходящий тренд</description></item>
+               <item><description>Падение значений → нисходящий тренд</description></item>
+               <item><description>Горизонтальная линия → отсутствие тренда</description></item>
              </list>
              </remarks>
         </member>
-        <member name="M:TALib.Functions.KamaLookback(System.Int32)">
+        <member name="M:TALib.Functions.LinearRegLookback(System.Int32)">
             <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Kama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Kama</see>.
+            Возвращает период lookback для функции <see cref="M:TALib.Functions.LinearReg``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)"/>.
             </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
+            <param name="optInTimePeriod">Период расчета.</param>
+            <returns>Количество периодов, необходимых для первого расчета.</returns>
         </member>
-        <member name="M:TALib.Functions.Kama``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
+        <member name="M:TALib.Functions.LinearReg``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
-            For compatibility with abstract API
+            Для совместимости с абстрактным API
             </remarks>
         </member>
         <member name="M:TALib.Functions.LinearRegAngle``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
-             Linear Regression Angle (Statistic Functions)
+             Linear Regression Angle (Statistic Functions) — Угол линейной регрессии (Статистические функции)
              </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
              <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
              </typeparam>
              <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении или соответствующий код ошибки в противном случае.
              </returns>
              <remarks>
-             Linear Regression Angle calculates the angle of the slope of the best-fit line for a series of data points
-             over a specified period. It provides a perspective on the direction and magnitude of the trend in degrees,
-             helping to identify trend strength and direction.
+             Угол линейной регрессии вычисляет угол наклона линии наилучшего соответствия для серии точек данных
+             за указанный период. Он предоставляет перспективу направления и величины тренда в градусах,
+             помогая определить силу и направление тренда.
              <para>
-             The function can suggest the strength of a trend. Confirming with ADX or volume indicators may reduce misinterpretation of
-             minor price changes as significant moves.
+             Функция может указывать на силу тренда. Подтверждение с помощью ADX или индикаторов объема может уменьшить неправильное толкование
+             незначительных изменений цены как значимых движений.
              </para>
             
-             <b>Calculation steps</b>:
+             <b>Этапы расчета</b>:
              <list type="number">
                <item>
                  <description>
-                   Calculate the sums of X values (index positions), squared X values, and the product of X and Y values (input values)
-                   over the specified period.
+                   Вычислить суммы значений X (индексные позиции), квадратов X и произведения X и Y (входные значения)
+                   за указанный период.
                  </description>
                </item>
                <item>
                  <description>
-                   Compute the slope (m) of the regression line using the formula:
+                   Вычислить наклон (m) линии регрессии по формуле:
                    <code>
                      m = (n * Sum(XY) - Sum(X) * Sum(Y)) / (n * Sum(X^2) - (Sum(X))^2)
                    </code>
-                   where n is the time period.
+                   где n — период времени.
                  </description>
                </item>
                <item>
                  <description>
-                   Convert the slope (m) into an angle in degrees using the arctangent function:
+                   Преобразовать наклон (m) в угол в градусах с использованием функции арктангенса:
                    <code>
                      Angle = RadiansToDegrees(Atan(m))
                    </code>
@@ -9265,26 +9385,26 @@
                </item>
              </list>
             
-             <b>Value interpretation</b>:
+             <b>Интерпретация значений</b>:
              <list type="bullet">
                <item>
                  <description>
-                   A positive angle indicates an uptrend, where prices are increasing.
+                   Положительный угол указывает на восходящий тренд, где цены растут.
                  </description>
                </item>
                <item>
                  <description>
-                   A negative angle indicates a downtrend, where prices are decreasing.
+                   Отрицательный угол указывает на нисходящий тренд, где цены падают.
                  </description>
                </item>
                <item>
                  <description>
-                   A near-zero angle suggests a lack of significant trend in the data over the period.
+                   Угол, близкий к нулю, указывает на отсутствие значительного тренда в данных за период.
                  </description>
                </item>
                <item>
                  <description>
-                   The greater the absolute value of the angle, the stronger the trend.
+                   Чем больше абсолютное значение угла, тем сильнее тренд.
                  </description>
                </item>
              </list>
@@ -9292,81 +9412,94 @@
         </member>
         <member name="M:TALib.Functions.LinearRegAngleLookback(System.Int32)">
             <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.LinearRegAngle``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">LinearRegAngle</see>.
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.LinearRegAngle``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">LinearRegAngle</see>.
             </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
         </member>
         <member name="M:TALib.Functions.LinearRegAngle``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
-            For compatibility with abstract API
+            Для совместимости с абстрактным API
             </remarks>
         </member>
         <member name="M:TALib.Functions.LinearRegIntercept``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
-             Linear Regression Intercept (Statistic Functions)
+             Linear Regression Intercept (Statistic Functions) — Линейная регрессия пересечения (Статистические функции)
              </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
              <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
              </typeparam>
              <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее успешность или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
              </returns>
              <remarks>
-             Linear Regression Intercept calculates the y-intercept of the best-fit line for a series of data points
-             over a specified period. It represents the value of the line when the x-value (index) is zero, offering insight
-             into the baseline level of the data.
+             Линейная регрессия пересечения вычисляет точку пересечения y линии наилучшего подхода для серии данных
+             за указанный период. Она представляет собой значение линии, когда значение x (индекс) равно нулю, предоставляя информацию
+             о базовом уровне данных.
              <para>
-             It can be used in conjunction with the slope to better understand the data's trend characteristics.
-             The function can serve as a reference point. Combining it with other regression-based metrics or price patterns
-             may offer richer insights.
+             Её можно использовать в сочетании с наклоном для лучшего понимания характеристик тренда данных.
+             Функция может служить ориентиром. Комбинирование её с другими метриками на основе регрессии или ценовыми паттернами
+             может дать более глубокие инсайты.
              </para>
             
-             <b>Calculation steps</b>:
+             <b>Шаги вычисления</b>:
              <list type="number">
                <item>
                  <description>
-                   Calculate the sums of X values (index positions), squared X values, and the product of X and Y values (input values)
-                   over the specified period.
+                   Вычислить суммы значений X (индексные позиции), квадратов X и произведения X и Y (входные значения)
+                   за указанный период.
                  </description>
                </item>
                <item>
                  <description>
-                   Compute the slope (m) of the regression line using the formula:
+                   Вычислить наклон (m) линии регрессии по формуле:
                    <code>
                      m = (n * Sum(XY) - Sum(X) * Sum(Y)) / (n * Sum(X^2) - (Sum(X))^2)
                    </code>
-                   where n is the time period.
+                   где n — период времени.
                  </description>
                </item>
                <item>
                  <description>
-                   Calculate the y-intercept (b) of the regression line using the formula:
+                   Вычислить точку пересечения y (b) линии регрессии по формуле:
                    <code>
                      b = (Sum(Y) - m * Sum(X)) / n
                    </code>
-                   where Sum(Y) is the sum of the input values, and Sum(X) is the sum of index positions.
+                   где Sum(Y) — сумма входных значений, а Sum(X) — сумма индексных позиций.
                  </description>
                </item>
              </list>
             
-             <b>Value interpretation</b>:
+             <b>Интерпретация значения</b>:
              <list type="bullet">
                <item>
                  <description>
-                   The y-intercept indicates the starting level of the data series relative to the regression line.
+                   Точка пересечения y указывает на начальный уровень серии данных относительно линии регрессии.
                  </description>
                </item>
                <item>
                  <description>
-                   Changes in the intercept over time can signal shifts in the baseline level of the data.
+                   Изменения в точке пересечения со временем могут сигнализировать о сдвигах в базовом уровне данных.
                  </description>
                </item>
              </list>
@@ -9374,75 +9507,88 @@
         </member>
         <member name="M:TALib.Functions.LinearRegInterceptLookback(System.Int32)">
             <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.LinearRegIntercept``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">LinearRegIntercept</see>.
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.LinearRegIntercept``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">LinearRegIntercept</see>.
             </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
         </member>
         <member name="M:TALib.Functions.LinearRegIntercept``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
-            For compatibility with abstract API
+            Для совместимости с абстрактным API
             </remarks>
         </member>
         <member name="M:TALib.Functions.LinearRegSlope``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
-             Linear Regression Slope (Statistic Functions)
+             Linear Regression Slope (Statistic Functions) — Линейная регрессия наклона (Статистические функции)
              </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
              <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
              </typeparam>
              <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее успешность или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
              </returns>
              <remarks>
-             Linear Regression Slope calculates the slope of the best-fit line for a series of data points
-             over a specified period. It provides insights into the direction and rate of change of a trend in the data.
+             Линейная регрессия наклона вычисляет наклон линии наилучшего соответствия для серии данных
+             за указанный период. Она предоставляет информацию о направлении и скорости изменения тренда в данных.
              <para>
-             The function can indicate an uptrend or downtrend. Confirming slope readings with trend or momentum indicators can
-             reduce the likelihood of misreading market conditions.
+             Функция может указывать на восходящий или нисходящий тренд. Подтверждение значений наклона с помощью индикаторов тренда или импульса может
+             уменьшить вероятность неправильного прочтения рыночных условий.
              </para>
             
-             <b>Calculation steps</b>:
+             <b>Этапы расчета</b>:
              <list type="number">
                <item>
                  <description>
-                   Calculate the sums of X values (index positions), squared X values, and the product of X and Y values (input values)
-                   over the specified period.
+                   Вычисляются суммы значений X (индексные позиции), квадратов X и произведения X и Y (входные значения)
+                   за указанный период.
                  </description>
                </item>
                <item>
                  <description>
-                   Compute the slope (m) of the regression line using the formula:
+                   Вычисляется наклон (m) линии регрессии по формуле:
                    <code>
                      m = (n * Sum(XY) - Sum(X) * Sum(Y)) / (n * Sum(X^2) - (Sum(X))^2)
                    </code>
-                   where n is the time period.
+                   где n — это период времени.
                  </description>
                </item>
              </list>
             
-             <b>Value interpretation</b>:
+             <b>Интерпретация значений</b>:
              <list type="bullet">
                <item>
                  <description>
-                   A positive slope indicates an uptrend, where values are increasing over time.
+                   Положительный наклон указывает на восходящий тренд, где значения увеличиваются со временем.
                  </description>
                </item>
                <item>
                  <description>
-                   A negative slope indicates a downtrend, where values are decreasing over time.
+                   Отрицательный наклон указывает на нисходящий тренд, где значения уменьшаются со временем.
                  </description>
                </item>
                <item>
                  <description>
-                   The magnitude of the slope reflects the strength of the trend.
+                   Величина наклона отражает силу тренда.
                  </description>
                </item>
              </list>
@@ -9450,84 +9596,14 @@
         </member>
         <member name="M:TALib.Functions.LinearRegSlopeLookback(System.Int32)">
             <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.LinearRegSlope``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">LinearRegSlope</see>.
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.LinearRegSlope``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">LinearRegSlope</see>.
             </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
         </member>
         <member name="M:TALib.Functions.LinearRegSlope``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Ln``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-            <summary>
-            Vector Log Natural (Math Transform)
-            </summary>
-            <param name="inReal">A span of input values.</param>
-            <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-            <param name="outReal">A span to store the calculated values.</param>
-            <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-            <typeparam name="T">
-            The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-            implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-            </typeparam>
-            <returns>
-            A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-            Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-            </returns>
-            <remarks>
-            LN applies the natural logarithm to data, useful in statistical and volatility analyses rather than direct trading signals.
-            <para>
-            The function may be integrated into algorithmic models or log-return calculations.
-            Pairing it with other statistical measures can refine volatility or return-based assessments.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.LnLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Ln``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Ln</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Ln``1(``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Log10``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-            <summary>
-            Vector Log10 (Math Transform)
-            </summary>
-            <param name="inReal">A span of input values.</param>
-            <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-            <param name="outReal">A span to store the calculated values.</param>
-            <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-            <typeparam name="T">
-            The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-            implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-            </typeparam>
-            <returns>
-            A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-            Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-            </returns>
-            <remarks>
-            LOG10 applies a base-10 logarithmic transformation, similar in purpose to LN.
-            <para>
-            The function can assist in scale normalization. Employing it in broader quantitative strategies may enhance data
-            interpretation and comparability.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Log10Lookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Log10``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Log10</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Log10``1(``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
+            Для совместимости с абстрактным API
             </remarks>
         </member>
         <member name="M:TALib.Functions.Macd``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Int32,System.Int32)">
