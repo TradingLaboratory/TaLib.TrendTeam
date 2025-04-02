@@ -2,7 +2,9 @@
 // Название файла: FunctionHelpers.cs
 
 namespace TALib;
-
+/// <summary>
+/// В этом классе собраны вспомогательные методы для расчёта индикаторов
+/// </summary>
 internal static partial class FunctionHelpers
 {
     // Раньше были в таком порядке:

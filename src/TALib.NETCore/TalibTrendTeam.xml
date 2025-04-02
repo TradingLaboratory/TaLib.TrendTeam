@@ -5446,6 +5446,11 @@
             <param name="id">The identifier of the function.</param>
             <param name="unstablePeriod">Number of periods to be stripped off.</param>
         </member>
+        <member name="T:TALib.FunctionHelpers">
+            <summary>
+            В этом классе собраны вспомогательные методы для расчёта индикаторов
+            </summary>
+        </member>
         <member name="M:TALib.FunctionHelpers.CalcAccumulationDistribution``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Int32@,``0)">
             <summary>
             Рассчитывает значение индикатора накопления/распределения (Accumulation/Distribution) для текущего бара.
@@ -6643,6 +6648,207 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
+        <member name="M:TALib.Functions.MaxIndex``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@,System.Int32)">
+             <summary>
+             Index of highest value over a specified period (Math Operators) — Индекс наибольшего значения за указанный период (Математические операторы)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outInteger">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outInteger[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Функция индекса наибольшего значения определяет индекс наибольшего значения за указанный период.
+             Эта функция полезна для точного определения позиции пиков в временном ряду внутри скользящего окна.
+             <para>
+             Функция <see cref="M:TALib.Functions.Max``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Max</see> может быть использована для получения самого наибольшего значения, а не его индекса.
+             </para>
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Инициализация наибольшего значения и его индекса для первого периода в указанном диапазоне.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Для каждого последующего периода обновление наибольшего значения и его индекса путем сравнения нового значения с текущим наибольшим.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Выходной результат представляет собой индекс наибольшего значения внутри скользящего окна, определяемого параметром <paramref name="optInTimePeriod"/>.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MaxIndexLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.MaxIndex``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@,System.Int32)">MaxIndex</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до вычисления первого выходного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.MaxIndex``1(``0[],System.Range,System.Int32[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.MinIndex``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@,System.Int32)">
+             <summary>
+             Index of lowest value over a specified period (Math Operators) — Индекс минимального значения за указанный период (Математические операторы)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outInteger">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outInteger[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Функция MinIndex вычисляет индекс минимального значения в ряду данных за указанный период.
+             Обычно используется в техническом анализе для определения, где произошло минимальное значение в скользящем окне данных.
+             <para>
+             Функция <see cref="M:TALib.Functions.Min``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Min</see> может быть использована для получения самого минимального значения, а не его индекса.
+             </para>
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Определить диапазон индексов для оценки минимального значения на основе входного диапазона и периода времени:
+                   <code>
+                     Range = [trailingIdx, today]
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Определить индекс минимального значения в диапазоне:
+                   <code>
+                     LowestIndex = IndexOfMin(inReal[i] for i in Range)
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Выходные данные предоставляют относительный индекс внутри входного диапазона, где было найдено минимальное значение в каждом временном окне.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MinIndexLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.MinIndex``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@,System.Int32)">MinIndex</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.MinIndex``1(``0[],System.Range,System.Int32[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Mult``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+            <summary>
+            Vector Arithmetic Multiplication (Math Operators) — Векторное арифметическое умножение (Математические операторы)
+            </summary>
+            <param name="inReal0">Первый массив входных значений.</param>
+            <param name="inReal1">Второй массив входных значений.</param>
+            <param name="inRange">
+            Диапазон обрабатываемых данных в <paramref name="inReal0"/> и <paramref name="inReal1"/> (начальный и конечный индексы).
+            - Если не указан, обрабатывается весь массив <paramref name="inReal0"/> и <paramref name="inReal1"/>.
+            </param>
+            <param name="outReal">
+            Массив, содержащий ТОЛЬКО валидные значения индикатора.
+            - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+            - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal0[outRange.Start + i]</c> и <c>inReal1[outRange.Start + i]</c>.
+            </param>
+            <param name="outRange">
+            Диапазон индексов в <paramref name="inReal0"/> и <paramref name="inReal1"/>, для которых рассчитаны валидные значения:
+            - <b>Start</b>: индекс первого элемента <paramref name="inReal0"/> и <paramref name="inReal1"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - <b>End</b>: индекс последнего элемента <paramref name="inReal0"/> и <paramref name="inReal1"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - Гарантируется: <c>End == inReal0.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+            - Если данных недостаточно (например, длина <paramref name="inReal0"/> и <paramref name="inReal1"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+            </param>
+            <typeparam name="T">
+            Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+            реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+            </typeparam>
+            <returns>
+            Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+            Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении или соответствующий код ошибки в противном случае.
+            </returns>
+            <remarks>
+            MULT умножает два временных ряда данных, что может быть полезно для масштабирования индикаторов или создания композитных сигналов.
+            <para>
+            Функция не генерирует сигналы сама по себе, но ценна при создании пользовательских индикаторов.
+            Интеграция её в расчеты соотношений или разбросов может дать более точные инсайты.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.MultLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Mult``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Mult</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого вычисления не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.Mult``1(``0[],``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
         <member name="M:TALib.Functions.Sub``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
             <summary>
             Векторная арифметическая операция вычитания (Математические операторы)
@@ -7244,6 +7450,53 @@
             <returns>Всегда 0, так как для этого вычисления не требуется исторических данных.</returns>
         </member>
         <member name="M:TALib.Functions.Log10``1(``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Sin``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+            <summary>
+            Vector Trigonometric Sin (Math Transform) — Векторная тригонометрическая функция SIN (Математическое преобразование)
+            </summary>
+            <typeparam name="T">
+            Тип числовых данных, обычно <see langword="float"/> или <see langword="double"/>,
+            реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+            </typeparam>
+            <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+            <param name="inRange">
+            Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+            - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+            </param>
+            <param name="outReal">
+            Массив, содержащий ТОЛЬКО валидные значения индикатора.
+            - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+            - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+            </param>
+            <param name="outRange">
+            Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+            - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+            - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+            - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+            </param>
+            <returns>
+            Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+            Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении или соответствующий код ошибки в противном случае.
+            </returns>
+            <remarks>
+            SIN применяет синусоидальную функцию к данным, обычно для продвинутого или экспериментального анализа.
+            <para>
+            Функция редко используется самостоятельно. Её применение обычно возникает при разработке сложных индикаторов или анализе циклов.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.SinLookback">
+            <summary>
+            Возвращает период предыстории для <see cref="M:TALib.Functions.Sin``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Sin</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого вычисления не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.Sin``1(``0[],System.Range,``0[],System.Range@)">
             <remarks>
             Для совместимости с абстрактным API
             </remarks>
@@ -8125,6 +8378,344 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
+        <member name="M:TALib.Functions.Macd``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Int32,System.Int32)">
+             <summary>
+             Moving Average Convergence/Divergence (Momentum Indicators) — Сходимость/расходимость скользящих средних (Индикаторы импульса)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outMACD">Массив, содержащий ТОЛЬКО валидные значения линии MACD.</param>
+             <param name="outMACDSignal">Массив, содержащий ТОЛЬКО валидные значения линии Signal.</param>
+             <param name="outMACDHist">Массив, содержащий ТОЛЬКО валидные значения гистограммы MACD.</param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outMACD"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outMACD"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInFastPeriod">Период для расчета быстрой скользящей средней.</param>
+             <param name="optInSlowPeriod">Период для расчета медленной скользящей средней.</param>
+             <param name="optInSignalPeriod">Период для расчета линии Signal.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу расчета.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Сходимость/расходимость скользящих средних (MACD) — это трендовый импульсный индикатор, показывающий отношение
+             между двумя скользящими средними цены инструмента. Он сравнивает две EMA для выявления смены импульса и потенциальных разворотов тренда.
+             <para>
+             Функция широко признана и часто используется с <see cref="M:TALib.Functions.Rsi``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">RSI</see> или <see cref="M:TALib.Functions.Bbands``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Double,System.Double,TALib.Core.MAType)">Bollinger Bands</see>
+             для подтверждения сигналов. Наблюдение за дивергенциями и пересечениями помогает распознавать изменения на рынке.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Рассчитать быструю экспоненциальную скользящую среднюю (EMA) входных значений за указанный <c>FastPeriod</c>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать медленную EMA входных значений за указанный <c>SlowPeriod</c>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить линию MACD как разность между быстрой EMA и медленной EMA:
+                   <code>
+                     MACD = EMA(FastPeriod) - EMA(SlowPeriod)
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать линию Signal как EMA линии MACD за указанный <c>SignalPeriod</c>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить гистограмму MACD как разность между линией MACD и линией Signal:
+                   <code>
+                     MACDHist = MACD - Signal
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Положительное значение линии MACD указывает на восходящий импульс, отрицательное — на нисходящий.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Линия Signal используется для идентификации потенциальных сигналов на покупку или продажу: бычий пересекающийся сигнал возникает, когда линия MACD
+                   пересекает линию Signal снизу вверх, медвежий — когда линия MACD пересекает линию Signal сверху вниз.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Гистограмма MACD отражает силу импульса: большие столбцы указывают на сильный импульс в направлении линии MACD, уменьшающиеся столбцы сигнализируют о возможном развороте или ослабевающем импульсе.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MacdLookback(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Возвращает период предыстории для <see cref="M:TALib.Functions.Macd``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Int32,System.Int32)">Macd</see>.
+            </summary>
+            <param name="optInFastPeriod">Период для расчета быстрой скользящей средней.</param>
+            <param name="optInSlowPeriod">Период для расчета медленной скользящей средней.</param>
+            <param name="optInSignalPeriod">Период для расчета линии Signal.</param>
+            <returns>Количество периодов, необходимых до расчета первого значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Macd``1(``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32,System.Int32,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.MacdExt``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType)">
+             <summary>
+             MACD with controllable MA type (Momentum Indicators) — MACD с настраиваемым типом скользящего среднего (Индикаторы импульса)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outMACD">
+             Массив, содержащий ТОЛЬКО валидные значения линии MACD.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outMACD[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outMACDSignal">
+             Массив, содержащий ТОЛЬКО валидные значения линии Signal.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outMACDSignal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outMACDHist">
+             Массив, содержащий ТОЛЬКО валидные значения гистограммы MACD.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outMACDHist[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outMACD"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outMACD"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInFastPeriod">Период для расчета быстрой скользящей средней.</param>
+             <param name="optInFastMAType">Тип скользящей средней, используемый для быстрой скользящей средней.</param>
+             <param name="optInSlowPeriod">Период для расчета медленной скользящей средней.</param>
+             <param name="optInSlowMAType">Тип скользящей средней, используемый для медленной скользящей средней.</param>
+             <param name="optInSignalPeriod">Период для расчета линии Signal.</param>
+             <param name="optInSignalMAType">Тип скользящей средней, используемый для линии Signal.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успешность или неудачу расчета.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Расширенная Сходимость-Расходимость Скользящих Средних (MACD) позволяет настраивать типы скользящих средних
+             для расчета линии MACD, линии Signal и гистограммы MACD. Эта гибкость позволяет адаптировать индикатор
+             к различным рыночным условиям и стратегиям анализа.
+             <para>
+             Выбор типов скользящих средних (например, SMA, EMA) для быстрой, медленной и линии Signal влияет на чувствительность индикатора.
+             Функция может быть адаптирована для определенных активов или условий волатильности. Комбинирование с индикаторами объема
+             может усилить сигналы, основанные на импульсе.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Рассчитать медленную скользящую среднюю с использованием указанных <paramref name="optInSlowPeriod"/> и <paramref name="optInSlowMAType"/>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать быструю скользящую среднюю с использованием указанных <paramref name="optInFastPeriod"/> и <paramref name="optInFastMAType"/>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать линию MACD как разницу между быстрой и медленной скользящими средними:
+                   <code>
+                     MACD = FastMA - SlowMA
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать линию Signal как скользящую среднюю линии MACD с использованием указанных <paramref name="optInSignalPeriod"/>
+                   и <paramref name="optInSignalMAType"/>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать гистограмму MACD как разницу между линией MACD и линией Signal:
+                   <code>
+                     MACDHist = MACD - Signal
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Положительное значение линии MACD указывает на восходящий импульс, отрицательное — на нисходящий.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Линия Signal используется для идентификации потенциальных сигналов на покупку или продажу. Бычий перекрест происходит, когда линия MACD
+                   пересекает линию Signal снизу вверх, медвежий перекрест — когда линия MACD пересекает линию Signal сверху вниз.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Гистограмма MACD отражает силу импульса: большие столбцы указывают на сильный импульс в направлении линии MACD, уменьшающиеся столбцы могут сигнализировать о возможном развороте или ослаблении импульса.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MacdExtLookback(System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType)">
+            <summary>
+            Возвращает период lookback для <see cref="M:TALib.Functions.MacdExt``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType)">MacdExt</see>.
+            </summary>
+            <param name="optInFastPeriod">Период для расчета быстрой скользящей средней.</param>
+            <param name="optInFastMAType">Тип скользящей средней, используемый для быстрой скользящей средней.</param>
+            <param name="optInSlowPeriod">Период для расчета медленной скользящей средней.</param>
+            <param name="optInSlowMAType">Тип скользящей средней, используемый для медленной скользящей средней.</param>
+            <param name="optInSignalPeriod">Период для расчета линии Signal.</param>
+            <param name="optInSignalMAType">Тип скользящей средней, используемый для линии Signal.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.MacdExt``1(``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.MacdFix``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Moving Average Convergence/Divergence Fix 12/26 (Momentum Indicators) — Сходимость/расходимость скользящих средних Fix 12/26 (Индикаторы импульса)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outMACD">Массив, содержащий ТОЛЬКО валидные значения линии MACD.</param>
+             <param name="outMACDSignal">Массив, содержащий ТОЛЬКО валидные значения сигнальной линии MACD.</param>
+             <param name="outMACDHist">Массив, содержащий ТОЛЬКО валидные значения гистограммы MACD.</param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outMACD"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outMACD"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInSignalPeriod">Период для расчета сигнальной линии.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее успешность или неудачу расчета.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Сходимость/расходимость скользящих средних Fix — это упрощенная версия индикатора MACD
+             с фиксированными быстрым и медленным периодами (12 и 26 соответственно). Эта версия фокусируется на расчете сигнальной линии
+             с настраиваемым периодом для гибкости в определении смены импульса.
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Вычислить быструю экспоненциальную скользящую среднюю (EMA) входных значений с периодом 12.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить медленную EMA входных значений с периодом 26.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать линию MACD как разницу между быстрой EMA и медленной EMA:
+                   <code>
+                     MACD = EMA(FastPeriod) - EMA(SlowPeriod)
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить сигнальную линию как EMA линии MACD с использованием указанного <paramref name="optInSignalPeriod"/>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать гистограмму MACD как разницу между линией MACD и сигнальной линией:
+                   <code>
+                     MACDHist = MACD - Signal
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Положительное значение линии MACD указывает на восходящий импульс, отрицательное — на нисходящий.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Сигнальная линия используется для определения потенциальных сигналов на покупку или продажу: бычий перекрест происходит, когда линия MACD
+                   пересекает сигнальную линию снизу вверх, медвежий перекрест — когда линия MACD пересекает сигнальную линию сверху вниз.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Гистограмма MACD отражает силу импульса: большие столбцы указывают на сильный импульс в направлении линии MACD, уменьшающиеся столбцы могут сигнализировать о возможном развороте или ослаблении импульса.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MacdFixLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.MacdFix``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32)">MacdFix</see>.
+            </summary>
+            <param name="optInSignalPeriod">Период для расчета сигнальной линии.</param>
+            <returns>Количество периодов, необходимых до расчета первого допустимого значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.MacdFix``1(``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
         <!-- Badly formed XML comment ignored for member "M:TALib.Functions.Rsi``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)" -->
         <member name="M:TALib.Functions.RsiLookback(System.Int32)">
             <summary>
@@ -8896,6 +9487,658 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
+        <member name="M:TALib.Functions.Mama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Double,System.Double)">
+             <summary>
+             MESA Adaptive Moving Average (Overlap Studies) — Адаптивное скользящее среднее MESA (Индикаторы наложения)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outMAMA">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора MAMA.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outMAMA[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outFAMA">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора FAMA.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outFAMA[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outMAMA"/> и <paramref name="outFAMA"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outMAMA"/> и <paramref name="outFAMA"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInFastLimit">
+             Верхняя граница для адаптивного фактора:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Более высокие значения увеличивают чувствительность к изменениям цен, делая MAMA более восприимчивым к рыночным трендам.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Более низкие значения снижают чувствительность, сглаживая выходные данные MAMA.
+                 </description>
+               </item>
+             </list>
+             <para>
+             Допустимый диапазон: <c>0.01..0.99</c>. Значения ближе к 0.99 максимально повышают чувствительность, тогда как значения ближе к 0.01 приоритизируют сглаживание.
+             </para>
+             </param>
+             <param name="optInSlowLimit">
+             Нижняя граница для адаптивного фактора:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Более высокие значения снижают минимальную чувствительность, добавляя стабильности MAMA во время консолидации рынка.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Более низкие значения увеличивают минимальную чувствительность, позволяя быстрее реагировать на изменения рынка.
+                 </description>
+               </item>
+             </list>
+             <para>
+             Допустимый диапазон: <c>0.01..0.99</c>. Значения ближе к 0.99 снижают шум, тогда как значения ближе к 0.01 позволяют большую гибкость.
+             </para>
+             </param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успешность или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Адаптивное скользящее среднее MESA динамически настраивает свою чувствительность на основе доминирующего цикла на рынке.
+             Оно использует комбинацию преобразования Хилберта и альфа-фактора для адаптации к изменяющимся рыночным условиям, производя
+             два выхода: MAMA и FAMA (Следующее адаптивное скользящее среднее).
+             <para>
+             Адаптивность функции позволяет ей быстро реагировать на тренды, минимизируя ложные сигналы в фазах консолидации.
+             Комбинирование с <see cref="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ADX</see>, <see cref="M:TALib.Functions.Rsi``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">RSI</see>,
+             или мерами волатильности, такими как <see cref="M:TALib.Functions.Atr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ATR</see>, может уточнить разработку стратегии.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Применяется взвешенное скользящее среднее (WMA) для сглаживания входных цен и уменьшения шума.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Выполняется преобразование Хилберта на сглаженных данных для извлечения согласованных (I) и квадратурных (Q) компонентов.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычисляется доминирующий период цикла на основе фазовых различий между последовательными согласованными и квадратурными значениями.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитывается альфа-фактор с использованием быстрых и медленных ограничений, который определяет уровень чувствительности:
+                   <code>
+                     Alpha = FastLimit / DeltaPhase
+                   </code>
+                   Корректировки проводятся для обеспечения того, чтобы альфа оставалась в пределах, определенных медленными и быстрыми ограничениями.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Обновляется MAMA с использованием текущей цены и альфа, и рассчитывается FAMA как сглаженная версия MAMA.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   <i>MAMA</i> отслеживает доминирующий тренд с минимальной задержкой.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   <i>FAMA</i> обеспечивает дополнительное сглаживание, выступая в роли сигнальной линии для идентификации изменений тренда.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Пересечения между MAMA и FAMA могут указывать на потенциальные сигналы покупки или продажи: бычье пересечение происходит, когда MAMA пересекает FAMA снизу вверх, а медвежье пересечение — когда MAMA пересекает FAMA сверху вниз.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MamaLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Mama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Double,System.Double)">Mama</see>.
+            </summary>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+            <remarks>
+            Фиксированный период обратного просмотра составляет 32 и устанавливается следующим образом:
+            <list type="bullet">
+            <item><description>12 ценовых баров для совместимости с реализацией TradeStation, описанной в книге Джона Элерса.</description></item>
+            <item><description>6 ценовых баров для <c>Detrender</c></description></item>
+            <item><description>6 ценовых баров для <c>Q1</c></description></item>
+            <item><description>3 ценовых бара для <c>JI</c></description></item>
+            <item><description>3 ценовых бара для <c>JQ</c></description></item>
+            <item><description>1 ценовой бар для <c>Re</c>/<c>Im</c></description></item>
+            <item><description>1 ценовой бар для <c>Delta Phase</c></description></item>
+            <item><description>————————</description></item>
+            <item><description>32 всего</description></item>
+            </list>
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Mama``1(``0[],System.Range,``0[],``0[],System.Range@,System.Double,System.Double)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Mavp``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">
+             <summary>
+             Moving average with variable period (Overlap Studies) — Скользящее среднее с переменным периодом (Индикаторы наложения)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inPeriods">Массив периодов, определяющих длину скользящего среднего для каждой точки данных.</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInMinPeriod">Минимально допустимый период для расчета скользящего среднего.</param>
+             <param name="optInMaxPeriod">Максимально допустимый период для расчета скользящего среднего.</param>
+             <param name="optInMAType">Тип скользящего среднего.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успешность или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Функция скользящего среднего с переменным периодом рассчитывает скользящее среднее, где период может варьироваться для каждой точки данных.
+             Эта гибкость позволяет скользящему среднему динамически адаптироваться к изменяющимся условиям,
+             таким как волатильность или пользовательские периоды.
+             <para>
+             Функция особенно полезна в сценариях, где требуется адаптация к рыночным условиям или специфическим пользовательским периодам.
+             Выбор <paramref name="optInMAType"/> и диапазон, определяемый <paramref name="optInMinPeriod"/> и
+             <paramref name="optInMaxPeriod"/>, значительно влияют на поведение и чувствительность MAVP.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Усечение входных периодов <paramref name="inPeriods"/> для соответствия указанным MinPeriod и MaxPeriod.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычисление скользящего среднего для каждой точки данных с использованием соответствующего периода из усеченного ряда.
+                   Тип скользящего среднего <paramref name="optInMAType"/> определяет метод расчета (например, SMA, EMA и т.д.).
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Заполнение выходного массива рассчитанными значениями скользящего среднего для каждого периода.
+                   Избегайте избыточных вычислений, повторно используя результаты для одинаковых периодов во входных данных.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Выходные данные MAVP отражают динамически скорректированное скользящее среднее на основе входных периодов.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Более короткие периоды приводят к более реактивным и чувствительным выходным данным, тогда как более длинные периоды обеспечивают более сглаженные и менее чувствительные выходные данные.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MavpLookback(System.Int32,TALib.Core.MAType)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Mavp``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">Mavp</see>.
+            </summary>
+            <param name="optInMaxPeriod">Максимально допустимый период для расчета скользящего среднего.</param>
+            <param name="optInMAType">Тип скользящего среднего.</param>
+            <returns>Количество периодов, необходимых до первого выходного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Mavp``1(``0[],``0[],System.Range,``0[],System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Max``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Highest value over a specified period (Math Operators) — Максимальное значение за указанный период (Математические операторы)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее успешность или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Функция максимального значения вычисляет максимальное значение за указанный период.
+             Эта функция часто используется в техническом анализе для определения наивысшей точки в временном ряду за скользящее окно.
+             <para>
+             Она часто используется для определения пиков или уровней сопротивления в наборе данных.
+             </para>
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Инициализировать максимальное значение и его индекс для первого периода в указанном диапазоне.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Перебрать точки данных в заданном диапазоне:
+                   - Обновить максимальное значение, если текущая точка данных выше, чем ранее зарегистрированное максимальное значение.
+                   - Если максимальное значение выходит за пределы скользящего окна, пересчитать максимальное значение для нового окна.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Сохранить вычисленное максимальное значение для каждой точки данных в выходном массиве.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значения</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Выходной массив представляет максимальное значение внутри скользящего окна, определенного параметром <paramref name="optInTimePeriod"/>.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MaxLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Max``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Max</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого выходного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Max``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.MidPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Midpoint Price over period (Overlap Studies) — Средняя цена за период (Индикаторы перекрытия)
+             </summary>
+             <param name="inHigh">Входные максимальные цены (High).</param>
+             <param name="inLow">Входные минимальные цены (Low).</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/> и <paramref name="inLow"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/> и <paramref name="inLow"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c> и <c>inLow[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/> и <paramref name="inLow"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/> и <paramref name="inLow"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/> и <paramref name="inLow"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> или <paramref name="inLow"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Индикатор MidPrice вычисляет среднее значение между максимальной и минимальной ценой за указанный период.
+             Он может использоваться для идентификации трендов или для проверки уровней поддержки и сопротивления.
+             <para>
+             Обычно используется в техническом анализе для определения центральных уровней цен внутри диапазона данных.
+             Совместное использование с осцилляторами может подчеркнуть, когда цена возвращается к своей средней точке или отклоняется от нее.
+             При использовании с периодом 1, эта функция эквивалентна <see cref="M:TALib.Functions.MedPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">MedPrice</see>.
+             </para>
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Определить наибольшую максимальную цену за указанный период:
+                   <code>
+                     Highest High = Max(inHigh[i] for i in range(trailingIdx, today))
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Определить наименьшую минимальную цену за указанный период:
+                   <code>
+                     Lowest Low = Min(inLow[i] for i in range(trailingIdx, today))
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить среднюю цену по формуле:
+                   <code>
+                     MidPrice = (Highest High + Lowest Low) / 2
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Выходные данные отражают центральную тенденцию ценового диапазона за период.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MidPriceLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.MidPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">MidPrice</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.MidPrice``1(``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Min``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
+             <summary>
+             Lowest value over a specified period (Math Operators) — Минимальное значение за указанный период (Математические операторы)
+             </summary>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Функция минимального значения вычисляет минимальное значение в ряде данных за указанный период.
+             Она часто используется в техническом анализе для определения минимального значения в скользящем окне данных.
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Определить диапазон индексов для вычисления минимального значения на основе входного диапазона и периода времени:
+                   <code>
+                     Range = [trailingIdx, today]
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Определить минимальное значение в диапазоне:
+                   <code>
+                     Lowest = Min(inReal[i] for i in Range)
+                   </code>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значения</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Выходное значение представляет минимальное значение в скользящем окне, определенном параметром <paramref name="optInTimePeriod"/>.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MinLookback(System.Int32)">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Min``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Min</see>.
+            </summary>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до вычисления первого выходного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Min``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.Sar``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Double,System.Double)">
+             <summary>
+             Parabolic SAR (Overlap Studies) — Параболический SAR (Индикаторы наложения)
+             </summary>
+             <param name="inHigh">Массив максимальных цен (High).</param>
+             <param name="inLow">Массив минимальных цен (Low).</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/> и <paramref name="inLow"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/> и <paramref name="inLow"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/> и <paramref name="inLow"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInAcceleration">
+             Коэффициент ускорения, который контролирует чувствительность SAR:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Более высокие значения делают SAR более чувствительным к изменениям цен, но могут увеличить риск ложных сигналов.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Меньшие значения снижают чувствительность, обеспечивая более плавные значения.
+                 </description>
+               </item>
+             </list>
+             <para>
+             Типичный диапазон: <c>0.01..0.2</c>.
+             </para>
+             </param>
+             <param name="optInMaximum">
+             Максимальное значение, до которого может увеличиваться коэффициент ускорения:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Более высокие значения позволяют SAR быстрее ускоряться во время сильных трендов.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Меньшие значения ограничивают ускорение, поддерживая более плавные тренды.
+                 </description>
+               </item>
+             </list>
+             <para>
+             Типичный диапазон: <c>0.01..0.5</c>.
+             </para>
+             </param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Возвращает <see cref="T:TALib.Core.RetCode"/>, указывающий успешность или неудачу расчета.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном расчете, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Параболический Stop and Reverse (SAR) — это трендовый индикатор, предназначенный для определения потенциальных точек разворота на рынке.
+             Он отображает серию точек выше или ниже ценовых баров, чтобы указать направление тренда.
+             По мере развития тренда точки SAR приближаются к ценам, предоставляя динамические уровни стоп-лосс, адаптирующиеся к изменяющимся условиям рынка.
+             <para>
+             Функция особенно полезна для определения направления тренда, установки трейлинговых стопов и выявления потенциальных разворотов.
+             Использование SAR вместе с трендовыми или волатильными индикаторами, такими как <see cref="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ADX</see> или
+             <see cref="M:TALib.Functions.Atr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ATR</see>, усиливает его применение.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Определите начальное направление тренда на основе направленного движения (DM) первых двух баров:
+                   <code>
+                     Direction = Long, если +DM > -DM; иначе Short.
+                   </code>
+                   В случае равенства, тренд по умолчанию считается Long.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Установите начальные значения SAR (Stop and Reverse) и Extreme Point (EP):
+             <code>
+             SAR = Lowest Low (для Long) или Highest High (для Short) первого ценового бара.
+             EP = Highest High (для Long) или Lowest Low (для Short) второго ценового бара.
+             </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Для каждого последующего ценового бара:
+                   <list type="bullet">
+                     <item>
+                       <description>
+                         Рассчитайте SAR по формуле:
+                         <code>
+                           SAR = Previous SAR + Acceleration Factor * (EP - Previous SAR)
+                         </code>
+                         Где Acceleration Factor (AF) начинается с начального значения и увеличивается постепенно с новыми максимумами/минимумами до максимального значения.
+                         EP обновляется до нового максимума (для Long) или минимума (для Short).
+                         </description>
+                     </item>
+                     <item>
+                       <description>
+                         Убедитесь, что SAR не проникает в диапазон двух предыдущих ценовых баров.
+                       </description>
+                     </item>
+                     <item>
+                       <description>
+                         Если SAR пересекает текущую цену, направление тренда меняется, и SAR сбрасывается до EP.
+                       </description>
+                     </item>
+                   </list>
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Точки SAR ниже цены указывают на восходящий тренд, предоставляя потенциальные уровни стоп-лосс для длинных позиций.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Точки SAR выше цены указывают на нисходящий тренд, предоставляя потенциальные уровни стоп-лосс для коротких позиций.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Когда SAR переходит снизу вверх (или наоборот), это сигнализирует о потенциальном развороте тренда.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.SarLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Sar``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Double,System.Double)">Sar</see>.
+            </summary>
+            <returns>Всегда 1, так как для этого расчета требуется только один ценовой бар.</returns>
+        </member>
+        <member name="M:TALib.Functions.Sar``1(``0[],``0[],System.Range,``0[],System.Range@,System.Double,System.Double)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
         <member name="M:TALib.Functions.Sma``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
              Simple Moving Average (Overlap Studies) — Простое скользящее среднее (Наложенные исследования)
@@ -9056,6 +10299,146 @@
             <returns>Всегда 0, так как для этого расчета не требуется исторических данных.</returns>
         </member>
         <member name="M:TALib.Functions.AvgPrice``1(``0[],``0[],``0[],``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.MedPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+             <summary>
+             Median Price (Price Transform) — Средняя цена (Трансформация цен)
+             </summary>
+             <param name="inHigh">Входные максимальные цены.</param>
+             <param name="inLow">Входные минимальные цены.</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/> и <paramref name="inLow"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/> и <paramref name="inLow"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c> и <c>inLow[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/> и <paramref name="inLow"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/> и <paramref name="inLow"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/> и <paramref name="inLow"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> или <paramref name="inLow"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Функция Средняя цена вычисляет среднее значение максимальных и минимальных цен для каждой точки данных в указанном диапазоне.
+             Эта функция предоставляет простое представление средней точки ценового бара за указанный период времени.
+             <para>
+             Обычно используется в качестве базового значения для дальнейших вычислений или как сглаживающий вход для уменьшения шума цен.
+             Функция работает с одним ценовым баром (текущие High и Low) вместо агрегации значений по нескольким барам.
+             Для вычислений, включающих несколько ценовых баров (например, наибольшая High и наименьшая Low), рассмотрите использование
+             функции <see cref="M:TALib.Functions.MidPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">MidPrice</see>.
+             </para>
+            
+             <b>Этапы вычисления</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Для каждой точки данных в указанном диапазоне суммируются <paramref name="inHigh"/> и <paramref name="inLow"/> цены.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Сумма делится на 2 для вычисления средней цены для текущего ценового бара.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Выходные данные предоставляют упрощенное представление центрального значения для каждого ценового бара.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.MedPriceLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.MedPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">MedPrice</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого вычисления не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.MedPrice``1(``0[],``0[],System.Range,``0[],System.Range@)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.TypPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+             <summary>
+             Typical Price (Price Transform) — Типичная Цена (Трансформация Цен)
+             </summary>
+             <param name="inHigh">Входные максимальные цены (High).</param>
+             <param name="inLow">Входные минимальные цены (Low).</param>
+             <param name="inClose">Входные цены закрытия (Close).</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>, <c>inLow[outRange.Start + i]</c> и <c>inClose[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Возвращает значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успешность или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             Типичная Цена — это простое среднее максимальных, минимальных и цен закрытия финансового инструмента
+             за определенный период времени. Она предоставляет прямое представление о среднем движении цены
+             в этом периоде, которое можно использовать для различных расчетов технического анализа или в качестве входных данных
+             для других индикаторов.
+             <para>
+             Функция может служить ориентиром для стратегий возврата к среднему или подтверждения.
+             Комбинирование с осцилляторами или волатильными полосами может добавить контекстуальной ценности.
+             </para>
+            
+             <b>Шаги расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Для каждого периода рассчитывается Типичная Цена по формуле:
+                   <code>
+                     TP = (High + Low + Close) / 3.
+                   </code>
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.TypPriceLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.TypPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">TypPrice</see>.
+            </summary>
+            <returns>Всегда 0, так как для этого расчета не требуется исторических данных.</returns>
+        </member>
+        <member name="M:TALib.Functions.TypPrice``1(``0[],``0[],``0[],System.Range,``0[],System.Range@)">
             <remarks>
             Для совместимости с абстрактным API
             </remarks>
@@ -9606,716 +10989,102 @@
             Для совместимости с абстрактным API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.Macd``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Int32,System.Int32)">
+        <member name="M:TALib.Functions.Var``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
-             Moving Average Convergence/Divergence (Momentum Indicators)
+             Variance (Statistic Functions) — Дисперсия (Статистические функции)
              </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outMACD">A span to store the calculated MACD line values.</param>
-             <param name="outMACDSignal">A span to store the calculated Signal line values.</param>
-             <param name="outMACDHist">A span to store the calculated MACD Histogram values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInFastPeriod">The time period for calculating the fast moving average.</param>
-             <param name="optInSlowPeriod">The time period for calculating the slow moving average.</param>
-             <param name="optInSignalPeriod">The time period for calculating the Signal line.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Moving Average Convergence Divergence is a trend-following momentum indicator that shows the relationship
-             between two moving averages of a security's price. It compares two EMAs to detect momentum shifts and potential trend reversals.
-             <para>
-             The function is widely recognized and often used with <see cref="M:TALib.Functions.Rsi``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Rsi</see> or <see cref="M:TALib.Functions.Bbands``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Double,System.Double,TALib.Core.MAType)">Bollinger Bands</see>
-             for signal confirmation. Observing divergences and crossovers can aid in recognizing market changes.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Calculate the fast exponential moving average (EMA) of the input values over the specified `FastPeriod`.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the slow EMA of the input values over the specified `SlowPeriod`.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the MACD line as the difference between the fast EMA and the slow EMA:
-                   <code>
-                     MACD = EMA(FastPeriod) - EMA(SlowPeriod)
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the Signal line as the EMA of the MACD line over the specified `SignalPeriod`.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the MACD Histogram as the difference between the MACD line and the Signal line:
-                   <code>
-                     MACDHist = MACD - Signal
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A positive MACD line indicates upward momentum, while a negative MACD line indicates downward momentum.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The Signal line is used to identify potential buy or sell signals, with a bullish crossover occurring when the MACD line
-                   crosses above the Signal line, and a bearish crossover occurring when the MACD line crosses below the Signal line.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The MACD Histogram reflects the strength of momentum, with larger bars indicating stronger momentum in the direction
-                   of the MACD line and shrinking bars signaling a potential reversal or weakening momentum.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MacdLookback(System.Int32,System.Int32,System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Macd``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,System.Int32,System.Int32)">Macd</see>.
-            </summary>
-            <param name="optInFastPeriod">The time period for calculating the fast moving average.</param>
-            <param name="optInSlowPeriod">The time period for calculating the slow moving average.</param>
-            <param name="optInSignalPeriod">The time period for calculating the Signal line.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Macd``1(``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32,System.Int32,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.MacdExt``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType)">
-             <summary>
-             MACD with controllable MA type (Momentum Indicators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outMACD">A span to store the calculated MACD line values.</param>
-             <param name="outMACDSignal">A span to store the calculated Signal line values.</param>
-             <param name="outMACDHist">A span to store the calculated MACD Histogram values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInFastPeriod">The time period for calculating the fast moving average.</param>
-             <param name="optInFastMAType">The moving average type used for the fast moving average.</param>
-             <param name="optInSlowPeriod">The time period for calculating the slow moving average.</param>
-             <param name="optInSlowMAType">The moving average type used for the slow moving average.</param>
-             <param name="optInSignalPeriod">The time period for calculating the Signal line.</param>
-             <param name="optInSignalMAType">The moving average type used for the Signal line.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Extended Moving Average Convergence Divergence allows customization of moving average types
-             for calculating the MACD line, Signal line, and MACD Histogram. This flexibility allows the indicator to be adapted
-             to various market conditions and analysis strategies.
-             <para>
-             The choice of moving average types (e.g., SMA, EMA) for the fast, slow, and Signal lines affects the indicator's sensitivity.
-             The function can be adapted to suit certain assets or volatility conditions. Combining it with volume indicators
-             may strengthen momentum-based signals.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Compute the slow moving average using the specified <paramref name="optInSlowPeriod"/> and <paramref name="optInSlowMAType"/>.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the fast moving average using the specified <paramref name="optInFastPeriod"/> and <paramref name="optInFastMAType"/>.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the MACD line as the difference between the fast and slow moving averages:
-                   <code>
-                     MACD = FastMA - SlowMA
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the Signal line as the moving average of the MACD line using the specified <paramref name="optInSignalPeriod"/>
-                   and <paramref name="optInSignalMAType"/>..
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the MACD Histogram as the difference between the MACD line and the Signal line:
-                   <code>
-                     MACDHist = MACD - Signal
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A positive MACD line indicates upward momentum, while a negative MACD line indicates downward momentum.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The Signal line is used to identify potential buy or sell signals, with a bullish crossover occurring when the MACD line
-                   crosses above the Signal line, and a bearish crossover occurring when the MACD line crosses below the Signal line.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The MACD Histogram reflects the strength of momentum, with larger bars indicating stronger momentum in the direction
-                   of the MACD line and shrinking bars signaling a potential reversal or weakening momentum.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MacdExtLookback(System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.MacdExt``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType)">MacdExt</see>.
-            </summary>
-            <param name="optInFastPeriod">The time period for calculating the fast moving average.</param>
-            <param name="optInFastMAType">The moving average type used for the fast moving average.</param>
-            <param name="optInSlowPeriod">The time period for calculating the slow moving average.</param>
-            <param name="optInSlowMAType">The moving average type used for the slow moving average.</param>
-            <param name="optInSignalPeriod">The time period for calculating the Signal line.</param>
-            <param name="optInSignalMAType">The moving average type used for the Signal line.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.MacdExt``1(``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType,System.Int32,TALib.Core.MAType)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.MacdFix``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Moving Average Convergence/Divergence Fix 12/26 (Momentum Indicators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outMACD">A span to store the calculated MACD line values.</param>
-             <param name="outMACDSignal">A span to store the calculated Signal line values.</param>
-             <param name="outMACDHist">A span to store the calculated MACD Histogram values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInSignalPeriod">The time period for calculating the Signal line.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Moving Average Convergence Divergence Fix is a simplified version of the MACD indicator
-             with fixed fast and slow periods (12 and 26, respectively). This version focuses on the Signal line
-             calculation with a configurable period for flexibility in identifying momentum shifts.
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Compute the fast exponential moving average (EMA) of the input values with a period of 12.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the slow EMA of the input values with a period of 26.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the MACD line as the difference between the fast EMA and the slow EMA:
-                   <code>
-                     MACD = EMA(FastPeriod) - EMA(SlowPeriod)
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the Signal line as the EMA of the MACD line using the specified `optInSignalPeriod`.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the MACD Histogram as the difference between the MACD line and the Signal line:
-                   <code>
-                     MACDHist = MACD - Signal
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A positive MACD line indicates upward momentum, while a negative MACD line indicates downward momentum.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The Signal line is used to identify potential buy or sell signals, with a bullish crossover occurring when the MACD line
-                   crosses above the Signal line, and a bearish crossover occurring when the MACD line crosses below the Signal line.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   The MACD Histogram reflects the strength of momentum, with larger bars indicating stronger momentum in the direction
-                   of the MACD line and shrinking bars signaling a potential reversal or weakening momentum.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MacdFixLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.MacdFix``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Span{``0},System.Range@,System.Int32)">MacdFix</see>.
-            </summary>
-            <param name="optInSignalPeriod">The time period for calculating the Signal line.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.MacdFix``1(``0[],System.Range,``0[],``0[],``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Mama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Double,System.Double)">
-             <summary>
-             MESA Adaptive Moving Average (Overlap Studies)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outMAMA">A span to store the calculated MAMA values.</param>
-             <param name="outFAMA">A span to store the calculated FAMA values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInFastLimit">
-             The upper bound for the adaptive factor:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Higher values increase responsiveness to price changes, making the MAMA more sensitive to market trends.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Lower values reduce responsiveness, smoothing the MAMA output.
-                 </description>
-               </item>
-             </list>
-             <para>
-             Valid range is <c>0.01..0.99</c>. Values near 0.99 maximize sensitivity, while values closer to 0.01 prioritize smoothing.
-             </para>
+             <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
              </param>
-             <param name="optInSlowLimit">
-             The lower bound for the adaptive factor:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Higher values reduce the minimum responsiveness, adding stability to the MAMA during market consolidations.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Lower values increase minimum responsiveness, allowing faster reactions to market changes.
-                 </description>
-               </item>
-             </list>
-             <para>
-             Valid range is <c>0.01..0.99</c>. Values near 0.99 reduce noise, while values closer to 0.01 allow greater flexibility.
-             </para>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
              </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <param name="optInTimePeriod">Период времени.</param>
              <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
              </typeparam>
              <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+             Значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
              </returns>
              <remarks>
-             MESA Adaptive Moving Average dynamically adjusts its responsiveness based on the dominant cycle in the market.
-             It utilizes a combination of the Hilbert Transform and alpha factor to adapt to changing market conditions, producing
-             two outputs: the MAMA and the FAMA (Following Adaptive Moving Average).
+             Функция дисперсии измеряет разброс или дисперсию набора значений вокруг их среднего.
+             Она дает представление о волатильности или изменчивости данных за указанный период.
              <para>
-             The function's adaptability allows it to respond quickly during trends while minimizing false signals in consolidation phases.
-             Combining it with <see cref="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ADX</see>, <see cref="M:TALib.Functions.Rsi``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">RSI</see>,
-             or volatility measures like <see cref="M:TALib.Functions.Atr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ATR</see> can refine strategy development.
+             Функция может использоваться для оценки риска или в количественных стратегиях.
+             Комбинирование с стандартным отклонением или Бета может уточнить понимание условий волатильности.
              </para>
             
-             <b>Calculation steps</b>:
+             <b>Этапы вычисления</b>:
              <list type="number">
                <item>
                  <description>
-                   Apply a Weighted Moving Average (WMA) to smooth the input prices and reduce noise.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Perform the Hilbert Transform on the smoothed data to extract in-phase (I) and quadrature (Q) components.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the dominant cycle period based on phase differences between successive in-phase and quadrature values.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the alpha factor using the fast and slow limits, which determines the level of responsiveness:
+                   Вычислить среднее (среднее значение) точек данных за указанный период времени:
                    <code>
-                     Alpha = FastLimit / DeltaPhase
+                     Mean = Sum(DataPoints) / TimePeriod
                    </code>
-                   Adjustments are made to ensure alpha stays within the range defined by the slow and fast limits.
                  </description>
                </item>
                <item>
                  <description>
-                   Update the MAMA using the current price and alpha, and calculate the FAMA as a smoothed version of the MAMA.
+                   Вычислить квадрат разности каждой точки данных от среднего:
+                   <code>
+                     Squared Difference = (Value - Mean)²
+                   </code>
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Вычислить дисперсию, усреднив эти квадраты разностей:
+                   <code>
+                     Variance = Σ(Squared Differences) / Period
+                   </code>
                  </description>
                </item>
              </list>
             
-             <b>Value interpretation</b>:
+             <b>Интерпретация значений</b>:
              <list type="bullet">
                <item>
                  <description>
-                   <i>MAMA</i> tracks the dominant trend with reduced lag.
+                   Более высокое значение указывает на большую изменчивость или волатильность данных.
                  </description>
                </item>
                <item>
                  <description>
-                   <i>FAMA</i> provides additional smoothing, acting as a signal line to identify changes in trend.
+                   Меньшее значение свидетельствует о том, что точки данных ближе к среднему, указывая на меньшую волатильность.
                  </description>
                </item>
                <item>
                  <description>
-                   Crossovers between MAMA and FAMA can indicate potential buy or sell signals: a bullish crossover occurs when MAMA crosses
-                   above FAMA, and a bearish crossover occurs when MAMA crosses below FAMA.
+                   Дисперсия часто используется как основа для других индикаторов, таких как стандартное отклонение.
                  </description>
                </item>
              </list>
              </remarks>
         </member>
-        <member name="M:TALib.Functions.MamaLookback">
+        <member name="M:TALib.Functions.VarLookback(System.Int32)">
             <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Mama``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Span{``0},System.Range@,System.Double,System.Double)">Mama</see>.
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.Var``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Var</see>.
             </summary>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
+            <param name="optInTimePeriod">Период времени.</param>
+            <returns>Количество периодов, необходимых до расчета первого выходного значения.</returns>
+        </member>
+        <member name="M:TALib.Functions.Var``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
-            The fix lookback is 32 and is established as follows:
-            <list type="bullet">
-            <item><description>12 price bar to be compatible with the implementation of TradeStation found in John Ehlers book.</description></item>
-            <item><description>6 price bars for the <c>Detrender</c></description></item>
-            <item><description>6 price bars for <c>Q1</c></description></item>
-            <item><description>3 price bars for <c>JI</c></description></item>
-            <item><description>3 price bars for <c>JQ</c></description></item>
-            <item><description>1 price bar for <c>Re</c>/<c>Im</c></description></item>
-            <item><description>1 price bar for the <c>Delta Phase</c></description></item>
-            <item><description>————————</description></item>
-            <item><description>32 total</description></item>
-            </list>
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Mama``1(``0[],System.Range,``0[],``0[],System.Range@,System.Double,System.Double)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Mavp``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">
-             <summary>
-             Moving average with variable period (Overlap Studies)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inPeriods">A span of period values that determine the moving average period for each data point.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInMinPeriod">The minimum allowable time period for calculating the moving average.</param>
-             <param name="optInMaxPeriod">The maximum allowable time period for calculating the moving average.</param>
-             <param name="optInMAType">The moving average type.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Moving Average Variable Period function calculates a moving average where the period can vary for each data point.
-             This flexibility allows the moving average to adapt dynamically to changing conditions,
-             such as volatility or custom-defined periods.
-             <para>
-             The function is particularly useful in scenarios where adaptability to market conditions or specific custom periods is required.
-             The choice of <paramref name="optInMAType"/> and the range defined by <paramref name="optInMinPeriod"/> and
-             <paramref name="optInMaxPeriod"/> significantly affects the behavior and responsiveness of the MAVP.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Truncate the input periods <paramref name="inPeriods"/> to fit within the specified MinPeriod and MaxPeriod.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the moving average for each data point using the corresponding period from the truncated series.
-                   The moving average type <paramref name="optInMAType"/> determines the calculation method (e.g., SMA, EMA, etc.).
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Populate the output with the calculated moving average values for each period.
-                   Avoid redundant calculations by reusing results for identical periods in the input.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The MAVP output reflects a dynamically adjusted moving average based on the input period values.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Shorter periods result in more reactive and sensitive outputs, while longer periods provide smoother and less sensitive outputs.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MavpLookback(System.Int32,TALib.Core.MAType)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Mavp``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">Mavp</see>.
-            </summary>
-            <param name="optInMaxPeriod">The maximum allowable time period for calculating the moving average.</param>
-            <param name="optInMAType">The moving average type.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Mavp``1(``0[],``0[],System.Range,``0[],System.Range@,System.Int32,System.Int32,TALib.Core.MAType)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Max``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Highest value over a specified period (Math Operators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Highest Value function calculates the maximum value over a specified period.
-             This function is commonly used in technical analysis to identify the highest point in a time series over a rolling window.
-             <para>
-             It is often used to determine peaks or resistance levels in a dataset.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Initialize the maximum value and its index for the first period in the specified range.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Iterate through the data points in the given range:
-                   - Update the maximum value if the current data point is higher than the previously recorded maximum.
-                   - If the maximum value falls outside the rolling window, recompute the maximum value for the new window.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Store the calculated maximum value for each data point in the output.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The output represents the highest value within the rolling window defined by <paramref name="optInTimePeriod"/>.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MaxLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Max``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Max</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Max``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.MaxIndex``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@,System.Int32)">
-             <summary>
-             Index of highest value over a specified period (Math Operators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outInteger">A span to store the calculated index values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Highest Value Index function identifies the index of the highest value over a specified period.
-             This function is useful for pinpointing the exact position of peaks in a time series within a rolling window.
-             <para>
-             The <see cref="M:TALib.Functions.Max``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Max</see> function can be used to get the highest value itself rather than its index.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Initialize the highest value and its index for the first period in the specified range.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   For each subsequent period, update the highest value and its index by comparing the new value with the current highest.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The output represents the index of the highest value within the rolling window defined by <paramref name="optInTimePeriod"/>.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MaxIndexLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.MaxIndex``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@,System.Int32)">MaxIndex</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.MaxIndex``1(``0[],System.Range,System.Int32[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.MedPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-             <summary>
-             Median Price (Price Transform)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Median Price function calculates the average of the high and low prices for each data point in the range.
-             This function provides a simple representation of the midpoint of the price bar for the given time period.
-             <para>
-             It is commonly used as a base value for further calculations or as a smoothing input to reduce price noise.
-             The function operates on a single price bar (current high and low) rather than aggregating values over multiple bars.
-             For calculations involving multiple price bars (e.g., highest high and lowest low), consider using
-             <see cref="M:TALib.Functions.MidPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">MidPrice</see> function instead.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   For each data point within the specified range, sum the <paramref name="inHigh"/> and <paramref name="inLow"/> prices.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Divide the sum by 2 to compute the median price for the current price bar.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The output provides a simplified view of the central value for each price bar.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MedPriceLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.MedPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">MedPrice</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.MedPrice``1(``0[],``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
+            Для совместимости с абстрактным API
             </remarks>
         </member>
         <member name="M:TALib.Functions.Mfi``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
@@ -10493,212 +11262,6 @@
             <returns>The number of periods required before the first output value can be calculated.</returns>
         </member>
         <member name="M:TALib.Functions.MidPoint``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.MidPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Midpoint Price over period (Overlap Studies)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             The MidPrice indicator calculates the average of the highest high and lowest low over a specified period.
-             It can be used to identify trends or to validate support and resistance levels.
-             <para>
-             It is commonly used in technical analysis to identify central price levels within a range of data. Pairing it with oscillators
-             may highlight when price returns to or strays from its midpoint. When applied with a period of 1,
-             this function is equivalent to <see cref="M:TALib.Functions.MedPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">MedPrice</see>.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Determine the highest high over the specified period:
-                   <code>
-                     Highest High = Max(inHigh[i] for i in range(trailingIdx, today))
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Determine the lowest low over the specified period:
-                   <code>
-                     Lowest Low = Min(inLow[i] for i in range(trailingIdx, today))
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the midpoint price using the formula:
-                   <code>
-                     MidPrice = (Highest High + Lowest Low) / 2
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The output reflects the central tendency of the price range over the period.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MidPriceLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.MidPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">MidPrice</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.MidPrice``1(``0[],``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Min``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Lowest value over a specified period (Math Operators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Lowest Value function calculates the lowest value in a data series over a specified period.
-             It is commonly used in technical analysis to identify the minimum value in a rolling window of data.
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Identify the range of indices to calculate the lowest value, based on the input range and time period:
-                   <code>
-                     Range = [trailingIdx, today]
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Determine the lowest value in the range:
-                   <code>
-                     Lowest = Min(inReal[i] for i in Range)
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The output represents the lowest value within the rolling window defined by <paramref name="optInTimePeriod"/>.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MinLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Min``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Min</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Min``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.MinIndex``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@,System.Int32)">
-             <summary>
-             Index of lowest value over a specified period (Math Operators)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outInteger">A span to store the calculated index values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             MinIndex function calculates the index of the lowest value in a data series over a specified period.
-             It is typically used in technical analysis to determine where the minimum value occurred in a rolling window of data.
-             <para>
-             The <see cref="M:TALib.Functions.Min``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Min</see> function can be used to get the lowest value itself rather than its index.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Identify the range of indices to evaluate for the lowest value based on the input range and time period:
-                   <code>
-                     Range = [trailingIdx, today]
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Determine the index of the lowest value in the range:
-                   <code>
-                     LowestIndex = IndexOfMin(inReal[i] for i in Range)
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   The output provides the relative index within the input range where the lowest value was found during each time window.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.MinIndexLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.MinIndex``1(System.ReadOnlySpan{``0},System.Range,System.Span{System.Int32},System.Range@,System.Int32)">MinIndex</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.MinIndex``1(``0[],System.Range,System.Int32[],System.Range@,System.Int32)">
             <remarks>
             For compatibility with abstract API
             </remarks>
@@ -11101,42 +11664,6 @@
             <returns>The number of periods required before the first output value can be calculated.</returns>
         </member>
         <member name="M:TALib.Functions.Mom``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Mult``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-            <summary>
-            Vector Arithmetic Multiplication (Math Operators)
-            </summary>
-            <param name="inReal0">The first span of input values.</param>
-            <param name="inReal1">The second span of input values.</param>
-            <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-            <param name="outReal">A span to store the calculated values.</param>
-            <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-            <typeparam name="T">
-            The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-            implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-            </typeparam>
-            <returns>
-            A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-            Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-            </returns>
-            <remarks>
-            MULT multiplies two data series, potentially useful for scaling indicators or creating composite signals.
-            <para>
-            The function does not generate signals alone but is valuable in custom indicator construction.
-            Integrating it into ratio or spread calculations can yield nuanced insights.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.MultLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Mult``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Mult</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Mult``1(``0[],``0[],System.Range,``0[],System.Range@)">
             <remarks>
             For compatibility with abstract API
             </remarks>
@@ -11900,149 +12427,6 @@
             For compatibility with abstract API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.Sar``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Double,System.Double)">
-             <summary>
-             Parabolic SAR (Overlap Studies)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInAcceleration">
-             The acceleration factor that controls the sensitivity of the SAR:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Higher values make the SAR more responsive to price changes but may increase the risk of false signals.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Lower values reduce responsiveness, providing smoother outputs.
-                 </description>
-               </item>
-             </list>
-             <para>
-             A typical range is <c>0.01..0.2</c>.
-             </para>
-             </param>
-             <param name="optInMaximum">
-             The maximum value to which the acceleration factor can increase:
-             <list type="bullet">
-               <item>
-                 <description>
-                   Higher values allow the SAR to accelerate more quickly during strong trends.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Lower values limit acceleration, maintaining smoother trends.
-                 </description>
-               </item>
-             </list>
-             <para>
-             A typical range is <c>0.01..0.5</c>.
-             </para>
-             </param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Parabolic Stop and Reverse is a trend-following indicator designed to identify potential reversal points in the market.
-             It plots a series of dots above or below price bars to signify the direction of the trend.
-             As the trend progresses, the dots move closer to the price, providing dynamic stop-loss levels that adapt to changing market conditions.
-             <para>
-             The function is particularly useful for identifying trend direction, setting trailing stops, and detecting potential reversals.
-             Pairing it with trend or volatility indicators such as <see cref="M:TALib.Functions.Adx``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ADX</see> or
-             <see cref="M:TALib.Functions.Atr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ATR</see> enhances its application.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Determine the initial trend direction based on the directional movement (DM) of the first two bars:
-                   <code>
-                     Direction = Long if +DM > -DM; otherwise, Short.
-                   </code>
-                   In the case of a tie, the trend defaults to Long.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Set the initial SAR (Stop and Reverse) and Extreme Point (EP):
-             <code>
-             SAR = Lowest Low (for Long) or Highest High (for Short) of the first price bar.
-             EP = Highest High (for Long) or Lowest Low (for Short) of the second price bar.
-             </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   For each subsequent price bar:
-                   <list type="bullet">
-                     <item>
-                       <description>
-                         Calculate the SAR using the formula:
-                         <code>
-                           SAR = Previous SAR + Acceleration Factor * (EP - Previous SAR)
-                         </code>
-                         Where the Acceleration Factor (AF) starts at the initial value and increases incrementally with new highs/lows up to the maximum limit.
-                         The EP is updated to the new highest high (for Long) or lowest low (for Short).
-                         </description>
-                     </item>
-                     <item>
-                       <description>
-                         Ensure that the SAR does not penetrate the range of the previous two price bars.
-                       </description>
-                     </item>
-                     <item>
-                       <description>
-                         If the SAR crosses the current price, the trend direction reverses, and the SAR is reset to the EP.
-                       </description>
-                     </item>
-                   </list>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   SAR dots below the price indicate an uptrend, providing potential stop-loss levels for long positions.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   SAR dots above the price indicate a downtrend, providing potential stop-loss levels for short positions.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   When the SAR switches from below to above (or vice versa), it signals a potential trend reversal.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.SarLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Sar``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Double,System.Double)">Sar</see>.
-            </summary>
-            <returns>Always 1 since there is only one price bar required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Sar``1(``0[],``0[],System.Range,``0[],System.Range@,System.Double,System.Double)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
         <member name="M:TALib.Functions.SarExt``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
              <summary>
              Parabolic SAR - Extended (Overlap Studies)
@@ -12249,40 +12633,6 @@
             <returns>Always 1 since there is only one price bar required for this calculation.</returns>
         </member>
         <member name="M:TALib.Functions.SarExt``1(``0[],``0[],System.Range,``0[],System.Range@,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.Double)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Sin``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-            <summary>
-            Vector Trigonometric Sin (Math Transform)
-            </summary>
-            <typeparam name="T">
-            The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-            implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-            </typeparam>
-            <param name="inReal">A span of input values.</param>
-            <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-            <param name="outReal">A span to store the calculated values.</param>
-            <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-            <returns>
-            A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-            Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-            </returns>
-            <remarks>
-            SIN applies the sine function to data, generally for advanced or experimental analysis.
-            <para>
-            The function is rarely used alone. Its application typically arises in complex indicator development or cycle analysis.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.SinLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Sin``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">Sin</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.Sin``1(``0[],System.Range,``0[],System.Range@)">
             <remarks>
             For compatibility with abstract API
             </remarks>
@@ -12706,81 +13056,6 @@
             For compatibility with abstract API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.TRange``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-             <summary>
-             True Range (Volatility Indicators)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inClose">A span of input close prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             TRANGE calculates the maximum of several range metrics, serving as a fundamental measure in volatility indicators like ATR.
-             <para>
-             The function alone measures volatility. Using it as input for <see cref="M:TALib.Functions.Atr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ATR</see> or
-             other volatility-based strategies can improve adjustments to changing market conditions.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Determine the current high-low difference: <c>val1 = High[today] - Low[today]</c>.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the difference between yesterday's close and today's high: <c>val2 = |High[today] - Close[yesterday]|</c>.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the difference between yesterday's close and today's low: <c>val3 = |Low[today] - Close[yesterday]|</c>.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Select the largest of these three values: <c>TrueRange = Max(val1, val2, val3)</c>.
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A higher value indicates higher market volatility.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A lower value indicates a more stable or less volatile market.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.TRangeLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.TRange``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">TRange</see>.
-            </summary>
-            <returns>Always 1 since there is only one price bar required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.TRange``1(``0[],``0[],``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
         <member name="M:TALib.Functions.Trima``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
              <summary>
              Triangular Moving Average (Overlap Studies)
@@ -12994,58 +13269,6 @@
             For compatibility with abstract API
             </remarks>
         </member>
-        <member name="M:TALib.Functions.TypPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
-             <summary>
-             Typical Price (Price Transform)
-             </summary>
-             <param name="inHigh">A span of input high prices.</param>
-             <param name="inLow">A span of input low prices.</param>
-             <param name="inClose">A span of input close prices.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Typical Price is a simple average of the high, low, and close prices of a financial instrument
-             for a given time period. It provides a straightforward representation of the average price movement
-             within that period, which can be used for various technical analysis calculations or as an input
-             to other indicators.
-             <para>
-             The function can serve as a reference for mean-reversion or confirmation strategies.
-             Combining it with oscillators or volatility bands may add contextual value.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   For each period, calculate the Typical Price using the formula:
-                   <code>
-                     TP = (High + Low + Close) / 3.
-                   </code>
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.TypPriceLookback">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.TypPrice``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">TypPrice</see>.
-            </summary>
-            <returns>Always 0 since no historical data is required for this calculation.</returns>
-        </member>
-        <member name="M:TALib.Functions.TypPrice``1(``0[],``0[],``0[],System.Range,``0[],System.Range@)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
         <member name="M:TALib.Functions.UltOsc``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32,System.Int32,System.Int32)">
              <summary>
              Ultimate Oscillator (Momentum Indicators)
@@ -13135,91 +13358,6 @@
             <returns>The number of periods required before the first output value can be calculated.</returns>
         </member>
         <member name="M:TALib.Functions.UltOsc``1(``0[],``0[],``0[],System.Range,``0[],System.Range@,System.Int32,System.Int32,System.Int32)">
-            <remarks>
-            For compatibility with abstract API
-            </remarks>
-        </member>
-        <member name="M:TALib.Functions.Var``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">
-             <summary>
-             Variance (Statistic Functions)
-             </summary>
-             <param name="inReal">A span of input values.</param>
-             <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-             <param name="outReal">A span to store the calculated values.</param>
-             <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-             <param name="optInTimePeriod">The time period.</param>
-             <typeparam name="T">
-             The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-             implementing the <see cref="T:System.Numerics.IFloatingPointIeee754`1"/> interface.
-             </typeparam>
-             <returns>
-             A <see cref="T:TALib.Core.RetCode"/> value indicating the success or failure of the calculation.
-             Returns <see cref="F:TALib.Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
-             </returns>
-             <remarks>
-             Variance function measures the spread or dispersion of a set of values around their mean.
-             It provides insights into the volatility or variability of the data over a specified period.
-             <para>
-             The function can be used in risk assessment or quantitative strategies.
-             Combining it with standard deviation or Beta may refine understanding of volatility conditions.
-             </para>
-            
-             <b>Calculation steps</b>:
-             <list type="number">
-               <item>
-                 <description>
-                   Compute the mean (average) of the data points for the specified time period:
-                   <code>
-                     Mean = Sum(DataPoints) / TimePeriod
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Calculate the squared difference of each data point from the mean:
-                   <code>
-                     Squared Difference = (Value - Mean)²
-                   </code>
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Compute the variance by averaging these squared differences:
-                   <code>
-                     Variance = Σ(Squared Differences) / Period
-                   </code>
-                 </description>
-               </item>
-             </list>
-            
-             <b>Value interpretation</b>:
-             <list type="bullet">
-               <item>
-                 <description>
-                   A higher value indicates greater variability or volatility in the data.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   A lower value suggests the data points are closer to the mean, indicating lower volatility.
-                 </description>
-               </item>
-               <item>
-                 <description>
-                   Variance is commonly used as a basis for other indicators, such as standard deviation.
-                 </description>
-               </item>
-             </list>
-             </remarks>
-        </member>
-        <member name="M:TALib.Functions.VarLookback(System.Int32)">
-            <summary>
-            Returns the lookback period for <see cref="M:TALib.Functions.Var``1(System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">Var</see>.
-            </summary>
-            <param name="optInTimePeriod">The time period.</param>
-            <returns>The number of periods required before the first output value can be calculated.</returns>
-        </member>
-        <member name="M:TALib.Functions.Var``1(``0[],System.Range,``0[],System.Range@,System.Int32)">
             <remarks>
             For compatibility with abstract API
             </remarks>
@@ -13691,6 +13829,94 @@
             </returns>
         </member>
         <member name="M:TALib.Functions.StdDev``1(``0[],System.Range,``0[],System.Range@,System.Int32,System.Double)">
+            <remarks>
+            Для совместимости с абстрактным API
+            </remarks>
+        </member>
+        <member name="M:TALib.Functions.TRange``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">
+             <summary>
+             True Range (Volatility Indicators) — Истинный диапазон (Индикаторы волатильности)
+             </summary>
+             <param name="inHigh">Входные максимальные цены.</param>
+             <param name="inLow">Входные минимальные цены.</param>
+             <param name="inClose">Входные цены закрытия.</param>
+             <param name="inRange">
+             Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+             - Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.
+             </param>
+             <param name="outReal">
+             Массив, содержащий ТОЛЬКО валидные значения индикатора.
+             - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+             - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>, <c>inLow[outRange.Start + i]</c> и <c>inClose[outRange.Start + i]</c>.
+             </param>
+             <param name="outRange">
+             Диапазон индексов в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, для которых рассчитаны валидные значения:
+             - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+             - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+             - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+             </param>
+             <typeparam name="T">
+             Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+             реализующий интерфейс <see cref="T:System.Numerics.IFloatingPointIeee754`1"/>.
+             </typeparam>
+             <returns>
+             Возвращает значение <see cref="T:TALib.Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+             Возвращает <see cref="F:TALib.Core.RetCode.Success"/> при успешном вычислении или соответствующий код ошибки в противном случае.
+             </returns>
+             <remarks>
+             TRANGE рассчитывает максимум из нескольких метрик диапазона, служащих фундаментальной мерой в индикаторах волатильности, таких как ATR.
+             <para>
+             Функция сама по себе измеряет волатильность. Использование её в качестве входных данных для <see cref="M:TALib.Functions.Atr``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@,System.Int32)">ATR</see> или
+             других стратегий, основанных на волатильности, может улучшить адаптацию к изменяющимся рыночным условиям.
+             </para>
+            
+             <b>Этапы расчета</b>:
+             <list type="number">
+               <item>
+                 <description>
+                   Определить текущую разницу между максимальной и минимальной ценой: <c>val1 = High[today] - Low[today]</c>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать разницу между вчерашней ценой закрытия и сегодняшней максимальной ценой: <c>val2 = |High[today] - Close[yesterday]|</c>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Рассчитать разницу между вчерашней ценой закрытия и сегодняшней минимальной ценой: <c>val3 = |Low[today] - Close[yesterday]|</c>.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Выбрать наибольшее из этих трех значений: <c>TrueRange = Max(val1, val2, val3)</c>.
+                 </description>
+               </item>
+             </list>
+            
+             <b>Интерпретация значений</b>:
+             <list type="bullet">
+               <item>
+                 <description>
+                   Более высокое значение указывает на более высокую волатильность рынка.
+                 </description>
+               </item>
+               <item>
+                 <description>
+                   Более низкое значение указывает на более стабильный или менее волатильный рынок.
+                 </description>
+               </item>
+             </list>
+             </remarks>
+        </member>
+        <member name="M:TALib.Functions.TRangeLookback">
+            <summary>
+            Возвращает период обратного просмотра для <see cref="M:TALib.Functions.TRange``1(System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.ReadOnlySpan{``0},System.Range,System.Span{``0},System.Range@)">TRange</see>.
+            </summary>
+            <returns>Всегда 1, так как для этого расчета требуется только один ценовой бар.</returns>
+        </member>
+        <member name="M:TALib.Functions.TRange``1(``0[],``0[],``0[],System.Range,``0[],System.Range@)">
             <remarks>
             Для совместимости с абстрактным API
             </remarks>
