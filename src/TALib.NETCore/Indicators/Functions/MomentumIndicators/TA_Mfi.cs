@@ -1,110 +1,109 @@
-/*
- * Technical Analysis Library for .NET
- * Copyright (c) 2020-2025 Anatolii Siryi
- *
- * This file is part of Technical Analysis Library for .NET.
- *
- * Technical Analysis Library for .NET is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Technical Analysis Library for .NET is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Technical Analysis Library for .NET. If not, see <https://www.gnu.org/licenses/>.
- */
+//Название файла TA_Mfi.cs
+//Группы к которым можно отнести индикатор:
+//MomentumIndicators (существующая папка - идеальное соответствие категории)
+//VolumeIndicators (альтернатива, если требуется группировка по типу индикатора)
+//MoneyFlow (альтернатива для акцента на денежных потоках)
 
 namespace TALib;
 
 public static partial class Functions
 {
     /// <summary>
-    /// Money Flow Index (Momentum Indicators)
+    /// Money Flow Index (Momentum Indicators) — Индекс Денежного Потока (Индикаторы Импульса)
     /// </summary>
-    /// <param name="inHigh">A span of input high prices.</param>
-    /// <param name="inLow">A span of input low prices.</param>
-    /// <param name="inClose">A span of input close prices.</param>
-    /// <param name="inVolume">A span of input volumes.</param>
-    /// <param name="inRange">The range of indices that determines the portion of data to be calculated within the input spans.</param>
-    /// <param name="outReal">A span to store the calculated values.</param>
-    /// <param name="outRange">The range of indices representing the valid data within the output spans.</param>
-    /// <param name="optInTimePeriod">The time period.</param>
+    /// <param name="inHigh">Входные данные максимальных цен.</param>
+    /// <param name="inLow">Входные данные минимальных цен.</param>
+    /// <param name="inClose">Входные данные цен закрытия.</param>
+    /// <param name="inVolume">Входные данные объемов.</param>
+    /// <param name="inRange">
+    /// Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/>, <paramref name="inClose"/>, <paramref name="inVolume"/> (начальный и конечный индексы).
+    /// - Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/>, <paramref name="inClose"/>, <paramref name="inVolume"/>.
+    /// </param>
+    /// <param name="outReal">
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>.
+    /// </param>
+    /// <param name="outRange">
+    /// Диапазон индексов в <paramref name="inHigh"/>, для которых рассчитаны валидные значения:
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+    /// </param>
+    /// <param name="optInTimePeriod">Период времени.</param>
     /// <typeparam name="T">
-    /// The numeric data type, typically <see langword="float"/> or <see langword="double"/>,
-    /// implementing the <see cref="IFloatingPointIeee754{T}"/> interface.
+    /// Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
+    /// реализующий интерфейс <see cref="IFloatingPointIeee754{T}"/>.
     /// </typeparam>
     /// <returns>
-    /// A <see cref="Core.RetCode"/> value indicating the success or failure of the calculation.
-    /// Returns <see cref="Core.RetCode.Success"/> on successful calculation, or an appropriate error code otherwise.
+    /// Значение <see cref="Core.RetCode"/>, указывающее успешность или неудачу вычисления.
+    /// Возвращает <see cref="Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
     /// </returns>
     /// <remarks>
-    /// Money Flow Index is a momentum oscillator that measures the strength of money flowing in and out of a security over a given period.
-    /// It combines price and volume data to indicate buying or selling pressure,
-    /// and is often used to identify overbought or oversold conditions.
+    /// Индекс Денежного Потока (MFI) — это импульсный осциллятор, который измеряет силу денежного потока, входящего и выходящего из ценной бумаги за определенный период.
+    /// Он объединяет данные цен и объемов, чтобы указать на давление покупателей или продавцов,
+    /// и часто используется для определения перекупленности или перепроданности.
     /// <para>
-    /// MFI is similar to the <see cref="Rsi{T}">RSI</see> but incorporates volume data.
-    /// Combining it with trend indicators or <see cref="Obv{T}">OBV</see> may strengthen interpretive power.
+    /// MFI похож на <see cref="Rsi{T}">RSI</see>, но включает данные объемов.
+    /// Его комбинирование с трендовыми индикаторами или <see cref="Obv{T}">OBV</see> может усилить интерпретацию.
     /// </para>
     ///
-    /// <b>Calculation steps</b>:
+    /// <b>Этапы расчета</b>:
     /// <list type="number">
     ///   <item>
     ///     <description>
-    ///       Compute the typical price for each bar:
+    ///       Вычислить типичную цену для каждого бара:
     ///       <code>
-    ///         Typical Price = (High + Low + Close) / 3
+    ///         Типичная Цена = (High + Low + Close) / 3
     ///       </code>
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Calculate the raw money flow for each bar:
+    ///       Рассчитать сырой денежный поток для каждого бара:
     ///       <code>
-    ///         Money Flow = Typical Price * Volume
+    ///         Денежный Поток = Типичная Цена * Volume
     ///       </code>
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Determine if the raw money flow is positive or negative by comparing the current typical price to the previous typical price:
-    ///       - If the current typical price is greater than the previous typical price, it contributes to the positive money flow.
-    ///       - If it is less, it contributes to the negative money flow.
+    ///       Определить, является ли сырой денежный поток положительным или отрицательным, сравнивая текущую типичную цену с предыдущей:
+    ///       - Если текущая типичная цена больше предыдущей, она способствует положительному денежному потоку.
+    ///       - Если меньше, то отрицательному.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Accumulate the positive and negative money flows over the specified time period (`optInTimePeriod`).
+    ///       Накопить положительные и отрицательные денежные потоки за указанный период времени (`optInTimePeriod`).
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Compute the Money Flow Index using the formula:
+    ///       Вычислить Индекс Денежного Потока с использованием формулы:
     ///       <code>
-    ///         MFI = 100 * (Positive Money Flow / (Positive Money Flow + Negative Money Flow))
+    ///         MFI = 100 * (Положительный Денежный Поток / (Положительный Денежный Поток + Отрицательный Денежный Поток))
     ///       </code>
     ///     </description>
     ///   </item>
     /// </list>
     ///
-    /// <b>Value interpretation</b>:
+    /// <b>Интерпретация значений</b>:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///       A value above 80 indicates overbought conditions, suggesting a potential trend reversal or pullback.
+    ///       Значение выше 80 указывает на перекупленность, предполагая возможный разворот тренда или откат.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       A value below 20 indicates oversold conditions, suggesting a potential trend reversal or bounce.
+    ///       Значение ниже 20 указывает на перепроданность, предполагая возможный разворот тренда или отскок.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Divergences between the MFI and price movement can signal potential trend reversals.
+    ///       Расхождения между MFI и движением цены могут сигнализировать о возможных разворотах тренда.
     ///     </description>
     ///   </item>
     /// </list>
@@ -122,16 +121,16 @@ public static partial class Functions
         MfiImpl(inHigh, inLow, inClose, inVolume, inRange, outReal, out outRange, optInTimePeriod);
 
     /// <summary>
-    /// Returns the lookback period for <see cref="Mfi{T}">Mfi</see>.
+    /// Возвращает период обратного просмотра для <see cref="Mfi{T}">Mfi</see>.
     /// </summary>
-    /// <param name="optInTimePeriod">The time period.</param>
-    /// <returns>The number of periods required before the first output value can be calculated.</returns>
+    /// <param name="optInTimePeriod">Период времени.</param>
+    /// <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
     [PublicAPI]
     public static int MfiLookback(int optInTimePeriod = 14) =>
         optInTimePeriod < 2 ? -1 : optInTimePeriod + Core.UnstablePeriodSettings.Get(Core.UnstableFunc.Mfi);
 
     /// <remarks>
-    /// For compatibility with abstract API
+    /// Для совместимости с абстрактным API
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode Mfi<T>(
@@ -185,7 +184,7 @@ public static partial class Functions
         var mflowIdx = 0;
         var maxIdxMflow = optInTimePeriod - 1;
 
-        // Accumulate the positive and negative money flow among the initial period.
+        // Накопить положительные и отрицательные денежные потоки в начальном периоде.
         var today = startIdx - lookbackTotal;
         var prevValue = (inHigh[today] + inLow[today] + inClose[today]) / FunctionHelpers.Three<T>();
 
@@ -195,10 +194,10 @@ public static partial class Functions
         AccumulateInitialMoneyFlow(inHigh, inLow, inClose, inVolume, ref today, ref prevValue, ref posSumMF, ref negSumMF, moneyFlow,
             ref mflowIdx, maxIdxMflow, optInTimePeriod);
 
-        /* The following two equations are equivalent:
+        /* Следующие два уравнения эквивалентны:
          *   MFI = 100 - (100 / 1 + (posSumMF / negSumMF))
          *   MFI = 100 * (posSumMF / (posSumMF + negSumMF))
-         * The second equation is used here for speed optimization.
+         * Вторая формула используется здесь для оптимизации скорости.
          */
         if (today > startIdx)
         {
@@ -207,7 +206,7 @@ public static partial class Functions
         }
         else
         {
-            // Skip the unstable period. Do the processing but do not write it in the output.
+            // Пропустить нестабильный период. Выполнить обработку, но не записывать в выходные данные.
             today = SkipMfiUnstablePeriod(inHigh, inLow, inClose, inVolume, today, startIdx, moneyFlow, maxIdxMflow, ref posSumMF,
                 ref mflowIdx, ref negSumMF, ref prevValue);
         }
