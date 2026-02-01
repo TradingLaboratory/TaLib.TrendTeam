@@ -43,4 +43,8 @@
     <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Indicators\Functions\OverlapStudies\Bands&amp;Channels\" />
+  </ItemGroup>
+
 </Project>
