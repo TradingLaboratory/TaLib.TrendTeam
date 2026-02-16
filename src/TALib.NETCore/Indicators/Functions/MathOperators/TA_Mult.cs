@@ -11,22 +11,26 @@ public static partial class Functions
     /// <summary>
     /// Vector Arithmetic Multiplication (Math Operators) — Векторное арифметическое умножение (Математические операторы)
     /// </summary>
-    /// <param name="inReal0">Первый массив входных значений.</param>
-    /// <param name="inReal1">Второй массив входных значений.</param>
+    /// <param name="inReal0">
+    /// Первый массив входных значений для расчета индикатора (цены, другие индикаторы или другие временные ряды).
+    /// </param>
+    /// <param name="inReal1">
+    /// Второй массив входных значений для расчета индикатора (цены, другие индикаторы или другие временные ряды).
+    /// </param>
     /// <param name="inRange">
-    /// Диапазон обрабатываемых данных в <paramref name="inReal0"/> и <paramref name="inReal1"/> (начальный и конечный индексы).
+    /// Диапазон обрабатываемых данных в <paramref name="inReal0"/> и <paramref name="inReal1"/> (начальный и конечный индексы).  
     /// - Если не указан, обрабатывается весь массив <paramref name="inReal0"/> и <paramref name="inReal1"/>.
     /// </param>
     /// <param name="outReal">
-    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
-    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
     /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal0[outRange.Start + i]</c> и <c>inReal1[outRange.Start + i]</c>.
     /// </param>
     /// <param name="outRange">
-    /// Диапазон индексов в <paramref name="inReal0"/> и <paramref name="inReal1"/>, для которых рассчитаны валидные значения:
-    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal0"/> и <paramref name="inReal1"/>, имеющего валидное значение в <paramref name="outReal"/>.
-    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal0"/> и <paramref name="inReal1"/>, имеющего валидное значение в <paramref name="outReal"/>.
-    /// - Гарантируется: <c>End == inReal0.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// Диапазон индексов в <paramref name="inReal0"/> и <paramref name="inReal1"/>, для которых рассчитаны валидные значения:  
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal0"/> и <paramref name="inReal1"/>, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal0"/> и <paramref name="inReal1"/>, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - Гарантируется: <c>End == inReal0.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.  
     /// - Если данных недостаточно (например, длина <paramref name="inReal0"/> и <paramref name="inReal1"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
     /// </param>
     /// <typeparam name="T">
@@ -79,23 +83,27 @@ public static partial class Functions
         Span<T> outReal,
         out Range outRange) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация выходного диапазона пустым значением (конец на 0)
         outRange = Range.EndAt(0);
 
-        // Проверка корректности диапазона входных данных
+        // Проверка корректности диапазона входных данных и длин массивов
         if (FunctionHelpers.ValidateInputRange(inRange, inReal0.Length, inReal1.Length) is not { } rangeIndices)
         {
             return Core.RetCode.OutOfRangeParam;
         }
 
+        // Извлечение начального и конечного индексов для обработки
         var (startIdx, endIdx) = rangeIndices;
 
+        // Счетчик записанных валидных значений в выходной массив
         var outIdx = 0;
         for (var i = startIdx; i <= endIdx; i++)
         {
-            // Умножение значений из двух входных массивов и сохранение результата в выходной массив
+            // Вычисление произведения соответствующих элементов и сохранение результата
             outReal[outIdx++] = inReal0[i] * inReal1[i];
         }
 
+        // Установка выходного диапазона: начало совпадает с startIdx, конец определяется количеством обработанных элементов
         outRange = new Range(startIdx, startIdx + outIdx);
 
         return Core.RetCode.Success;

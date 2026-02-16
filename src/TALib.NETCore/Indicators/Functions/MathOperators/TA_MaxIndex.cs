@@ -1,8 +1,8 @@
 //Название файла: TA_MaxIndex.cs
 //Группы к которым можно отнести индикатор:
 //MathOperators (существующая папка - идеальное соответствие категории)
-//MomentumIndicators (альтернатива, если требуется группировка по типу индикатора)
-//TrendStrength (альтернатива для акцента на силе тренда)
+//StatisticFunctions (альтернатива, если требуется группировка по статистическим функциям)
+//MomentumIndicators (альтернатива для акцента на поиске экстремумов тренда)
 
 namespace TALib;
 
@@ -13,19 +13,19 @@ public static partial class Functions
     /// </summary>
     /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
     /// <param name="inRange">
-    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).  
     /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
     /// </param>
     /// <param name="outInteger">
-    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
-    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
     /// - Каждый элемент <c>outInteger[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
     /// </param>
     /// <param name="outRange">
-    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
-    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.
-    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.
-    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:  
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.  
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outInteger"/>.  
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.  
     /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
     /// </param>
     /// <param name="optInTimePeriod">Период времени.</param>
@@ -103,6 +103,7 @@ public static partial class Functions
         out Range outRange,
         int optInTimePeriod) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация выходного диапазона пустым значением
         outRange = Range.EndAt(0);
 
         // Проверка корректности входного диапазона
@@ -111,6 +112,7 @@ public static partial class Functions
             return Core.RetCode.OutOfRangeParam;
         }
 
+        // Извлечение начального и конечного индексов диапазона
         var (startIdx, endIdx) = rangeIndices;
 
         // Проверка корректности временного периода
@@ -119,7 +121,9 @@ public static partial class Functions
             return Core.RetCode.BadParam;
         }
 
+        // Расчет периода обратного просмотра (lookback)
         var lookbackTotal = MaxIndexLookback(optInTimePeriod);
+        // Корректировка начального индекса с учетом lookback
         startIdx = Math.Max(startIdx, lookbackTotal);
 
         // Если начальный индекс больше конечного, выход
@@ -129,22 +133,31 @@ public static partial class Functions
         }
 
         // Продолжение вычисления для запрашиваемого диапазона
+        // Индекс для записи в выходной массив
         var outIdx = 0;
+        // Текущий индекс обрабатываемого бара
         var today = startIdx;
+        // Индекс начала скользящего окна
         var trailingIdx = startIdx - lookbackTotal;
 
+        // Индекс наибольшего значения в окне
         var highestIdx = -1;
+        // Наибольшее значение в окне
         var highest = T.Zero;
         while (today <= endIdx)
         {
             // Обновление индекса и значения наибольшего значения
             (highestIdx, highest) = FunctionHelpers.CalcHighest(inReal, trailingIdx, today, highestIdx, highest);
 
+            // Запись индекса наибольшего значения в выходной массив
             outInteger[outIdx++] = highestIdx;
+            // Сдвиг начала окна вперед
             trailingIdx++;
+            // Переход к следующему бару
             today++;
         }
 
+        // Установка выходного диапазона валидных значений
         // Сохранение начального индекса относительно входных данных перед возвратом
         outRange = new Range(startIdx, startIdx + outIdx);
 

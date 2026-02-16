@@ -1,26 +1,39 @@
 //Название файла: TA_Div.cs
 //Группы к которым можно отнести индикатор:
 //MathOperators (существующая папка - идеальное соответствие категории)
-//ArithmeticFunctions (альтернатива, если требуется группировка по типу функций)
-//ElementWiseOperations (альтернатива для акцента на элементных операциях)
+//StatisticFunctions (альтернатива, если требуется группировка по типу функций)
+//ArithmeticFunctions (альтернатива для акцента на арифметических операциях)
 
 namespace TALib;
 
 public static partial class Functions
 {
     /// <summary>
-    /// Vector Arithmetic Division (Math Operators) — Векторное деление (Математические операторы)
+    /// Vector Arithmetic Div (Math Operators) — Векторное арифметическое деление (Математические операторы)
     /// </summary>
-    /// <param name="inReal0">Первый набор входных значений.</param>
-    /// <param name="inReal1">Второй набор входных значений.</param>
+    /// <param name="inReal0">
+    /// Первый массив входных данных (числитель). 
+    /// Цены, другие индикаторы или временные ряды.
+    /// </param>
+    /// <param name="inReal1">
+    /// Второй массив входных данных (знаменатель). 
+    /// Цены, другие индикаторы или временные ряды.
+    /// </param>
     /// <param name="inRange">
-    /// Диапазон индексов, определяющий часть данных, которая будет рассчитана в пределах входных наборов.
+    /// Диапазон обрабатываемых данных в <paramref name="inReal0"/> и <paramref name="inReal1"/> (начальный и конечный индексы).  
+    /// - Если не указан, обрабатывается весь массив входных данных.
     /// </param>
     /// <param name="outReal">
-    /// Набор для хранения рассчитанных значений.
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
+    /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal0[outRange.Start + i]</c> и <c>inReal1[outRange.Start + i]</c>.
     /// </param>
     /// <param name="outRange">
-    /// Диапазон индексов, представляющий допустимые данные в пределах выходных наборов.
+    /// Диапазон индексов во входных данных, для которых рассчитаны валидные значения:  
+    /// - <b>Start</b>: индекс первого элемента входных массивов, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - <b>End</b>: индекс последнего элемента входных массивов, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - Гарантируется: <c>End == inReal0.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.  
+    /// - Если данных недостаточно, возвращается <c>[0, -1]</c>.
     /// </param>
     /// <typeparam name="T">
     /// Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
@@ -46,14 +59,17 @@ public static partial class Functions
         DivImpl(inReal0, inReal1, inRange, outReal, out outRange);
 
     /// <summary>
-    /// Возвращает период предыстории для <see cref="Div{T}">Div</see>.
+    /// Возвращает период предыстории (lookback) для <see cref="Div{T}">Div</see>.
     /// </summary>
-    /// <returns>Всегда 0, так как для этого расчета не требуется исторических данных.</returns>
+    /// <returns>
+    /// Всегда 0, так как для этого расчета не требуется исторических данных. 
+    /// Первое валидное значение может быть рассчитано сразу для первого бара входных данных.
+    /// </returns>
     [PublicAPI]
     public static int DivLookback() => 0;
 
     /// <remarks>
-    /// Для совместимости с абстрактным API
+    /// Для совместимости с абстрактным API.
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode Div<T>(
@@ -71,6 +87,7 @@ public static partial class Functions
         Span<T> outReal,
         out Range outRange) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация выходного диапазона пустым значением
         outRange = Range.EndAt(0);
 
         // Проверка корректности диапазона входных данных
@@ -79,16 +96,19 @@ public static partial class Functions
             return Core.RetCode.OutOfRangeParam;
         }
 
+        // Извлечение индексов начала и конца обработки из проверенного диапазона
         var (startIdx, endIdx) = rangeIndices;
 
+        // Индекс для записи результатов в выходной массив
         var outIdx = 0;
-        // Поэлементное деление входных данных
+
+        // Поэлементное деление входных данных в указанном диапазоне
         for (var i = startIdx; i <= endIdx; i++)
         {
             outReal[outIdx++] = inReal0[i] / inReal1[i];
         }
 
-        // Установка диапазона выходных данных
+        // Установка диапазона выходных данных на основе обработанных индексов
         outRange = new Range(startIdx, startIdx + outIdx);
 
         return Core.RetCode.Success;
