@@ -2,7 +2,7 @@
 //Группы к которым можно отнести индикатор:
 //CycleIndicators (существующая папка - идеальное соответствие категории)
 //MathTransform (альтернатива, если требуется группировка по типу индикатора)
-//HilbertTransform (альтернатива для акцента на преобразовании Хилберта)
+//HilbertTransform (предлагаемая подпапка для индикаторов преобразования Хилберта)
 
 namespace TALib;
 
@@ -11,26 +11,29 @@ public static partial class Functions
     /// <summary>
     /// Hilbert Transform - SineWave (Cycle Indicators) — Преобразование Хилберта - Синусоида (Индикаторы циклов)
     /// </summary>
-    /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
+    /// <param name="inReal">
+    /// Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды).
+    /// Обычно используется цена закрытия (Close), но могут применяться и другие ряды данных.
+    /// </param>
     /// <param name="inRange">
-    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).  
     /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
     /// </param>
     /// <param name="outSine">
-    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
-    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// Массив, содержащий ТОЛЬКО валидные значения синусоидальной компоненты индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
     /// - Каждый элемент <c>outSine[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
     /// </param>
     /// <param name="outLeadSine">
-    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
-    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// Массив, содержащий ТОЛЬКО валидные значения ведущей синусоидальной компоненты индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
     /// - Каждый элемент <c>outLeadSine[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
     /// </param>
     /// <param name="outRange">
-    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
-    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outSine"/> и <paramref name="outLeadSine"/>.
-    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outSine"/> и <paramref name="outLeadSine"/>.
-    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:  
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outSine"/> и <paramref name="outLeadSine"/>.  
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outSine"/> и <paramref name="outLeadSine"/>.  
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.  
     /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
     /// </param>
     /// <typeparam name="T">
@@ -119,18 +122,25 @@ public static partial class Functions
         HtSineImpl(inReal, inRange, outSine, outLeadSine, out outRange);
 
     /// <summary>
-    /// Возвращает период обратного просмотра для <see cref="HtSine{T}">HtSine</see>.
+    /// Возвращает период обратного просмотра (Lookback) для <see cref="HtSine{T}">HtSine</see>.
     /// </summary>
-    /// <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+    /// <returns>
+    /// Количество периодов (баров), необходимых до первого вычисленного валидного значения индикатора.
+    /// Это значение соответствует индексу первого бара во входных данных, для которого можно получить валидный результат.
+    /// </returns>
     /// <remarks>
     /// Пропускается 31 входных данных для совместимости с Tradestation.
-    /// См. <see cref="MamaLookback">MamaLookback</see> для объяснения "32"
+    /// См. <see cref="MamaLookback">MamaLookback</see> для объяснения значения "32".
+    /// <para>
+    /// Lookback период обозначает индекс первого бара во входящих данных, для которого можно будет получить валидное значение рассчитываемого индикатора.
+    /// Все бары с индексом меньше чем lookback будут пропущены при расчете первого валидного значения.
+    /// </para>
     /// </remarks>
     [PublicAPI]
     public static int HtSineLookback() => Core.UnstablePeriodSettings.Get(Core.UnstableFunc.HtSine) + 31 + 32;
 
     /// <remarks>
-    /// Для совместимости с абстрактным API
+    /// Для совместимости с абстрактным API.
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode HtSine<T>(
@@ -148,8 +158,10 @@ public static partial class Functions
         Span<T> outLeadSine,
         out Range outRange) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация выходного диапазона пустым значением
         outRange = Range.EndAt(0);
 
+        // Проверка корректности входного диапазона данных
         if (FunctionHelpers.ValidateInputRange(inRange, inReal.Length) is not { } rangeIndices)
         {
             return Core.RetCode.OutOfRangeParam;
@@ -157,23 +169,32 @@ public static partial class Functions
 
         var (startIdx, endIdx) = rangeIndices;
 
+        // Получение общего периода обратного просмотра (lookback) для индикатора
         var lookbackTotal = HtSineLookback();
+        // Корректировка начального индекса с учетом lookback (пропуск недостаточных данных)
         startIdx = Math.Max(startIdx, lookbackTotal);
 
+        // Если начальный индекс больше конечного, расчет не требуется
         if (startIdx > endIdx)
         {
             return Core.RetCode.Success;
         }
 
+        // Размер буфера для сглаженных цен
         const int smoothPriceSize = 50;
+        // Буфер для хранения сглаженных значений цен (WMA)
         Span<T> smoothPrice = new T[smoothPriceSize];
 
+        // Индекс начала вывода валидных данных
         var outBegIdx = startIdx;
 
+        // Инициализация вспомогательных переменных для взвешенного скользящего среднего (WMA)
         FunctionHelpers.HTHelper.InitWma(inReal, startIdx, lookbackTotal, out var periodWMASub, out var periodWMASum,
             out var trailingWMAValue, out var trailingWMAIdx, 34, out var today);
 
+        // Индекс для циклического буфера преобразования Хилберта
         var hilbertIdx = 0;
+        // Индекс для буфера сглаженных цен
         var smoothPriceIdx = 0;
 
         /* Инициализация циклического буфера, используемого логикой преобразования Хилберта.
@@ -184,39 +205,51 @@ public static partial class Functions
          */
         Span<T> circBuffer = FunctionHelpers.HTHelper.BufferFactory<T>();
 
+        // Индекс для записи результатов в выходные массивы
         var outIdx = 0;
 
+        // Переменные для хранения промежуточных значений преобразования Хилберта и фазы
         T prevI2, prevQ2, re, im, i1ForOddPrev3, i1ForEvenPrev3, i1ForOddPrev2, i1ForEvenPrev2, smoothPeriod, dcPhase;
+        // Инициализация переменных нулевыми значениями
         var period = prevI2 = prevQ2 =
             re = im = i1ForOddPrev3 = i1ForEvenPrev3 = i1ForOddPrev2 = i1ForEvenPrev2 = smoothPeriod = dcPhase = T.Zero;
 
         // Код оптимизирован по скорости и может быть сложным для понимания, если вы не знакомы с оригинальным алгоритмом.
         while (today <= endIdx)
         {
+            // Расчет корректированного предыдущего периода для сглаживания
             var adjustedPrevPeriod = T.CreateChecked(0.075) * period + T.CreateChecked(0.54);
 
+            // Вычисление взвешенного скользящего среднего (WMA) для текущей цены
             FunctionHelpers.DoPriceWma(inReal, ref trailingWMAIdx, ref periodWMASub, ref periodWMASum, ref trailingWMAValue, inReal[today],
                 out var smoothedValue);
 
             // Запоминаем сглаженное значение в циклический буфер smoothPrice.
             smoothPrice[smoothPriceIdx] = smoothedValue;
 
+            // Выполнение преобразования Хилберта для получения квадратурных компонентов
             PerformHilbertTransform(today, circBuffer, smoothedValue, adjustedPrevPeriod, prevQ2, prevI2, ref hilbertIdx,
                 ref i1ForEvenPrev3, ref i1ForOddPrev3, ref i1ForOddPrev2, out var q2, out var i2, ref i1ForEvenPrev2);
 
             // Корректировка периода для следующего ценового бара
             FunctionHelpers.HTHelper.CalcSmoothedPeriod(ref re, i2, q2, ref prevI2, ref prevQ2, ref im, ref period);
 
+            // Сглаживание периода цикла
             smoothPeriod = T.CreateChecked(0.33) * period + T.CreateChecked(0.67) * smoothPeriod;
 
+            // Вычисление фазы доминирующего цикла (DCPhase)
             dcPhase = ComputeDcPhase(smoothPrice, smoothPeriod, smoothPriceIdx, dcPhase);
 
+            // Если достигнут начальный индекс для вывода валидных данных
             if (today >= startIdx)
             {
+                // Расчет синусоидальной компоненты
                 outSine[outIdx] = T.Sin(T.DegreesToRadians(dcPhase));
+                // Расчет ведущей синусоидальной компоненты (сдвиг на 45 градусов)
                 outLeadSine[outIdx++] = T.Sin(T.DegreesToRadians(dcPhase + T.CreateChecked(45)));
             }
 
+            // Циклическое переключение индекса буфера сглаженных цен
             if (++smoothPriceIdx > smoothPriceSize - 1)
             {
                 smoothPriceIdx = 0;
@@ -225,6 +258,7 @@ public static partial class Functions
             today++;
         }
 
+        // Установка выходного диапазона (outRange), указывающего на валидные данные во входном массиве
         outRange = new Range(outBegIdx, outBegIdx + outIdx);
 
         return Core.RetCode.Success;
