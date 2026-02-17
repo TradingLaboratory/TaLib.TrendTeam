@@ -11,24 +11,44 @@ public static partial class Functions
     /// <summary>
     /// True Range (Volatility Indicators) — Истинный диапазон (Индикаторы волатильности)
     /// </summary>
-    /// <param name="inHigh">Входные максимальные цены.</param>
-    /// <param name="inLow">Входные минимальные цены.</param>
-    /// <param name="inClose">Входные цены закрытия.</param>
+    /// <param name="inHigh">
+    /// Входные максимальные цены (High) для расчета индикатора.
+    /// </param>
+    /// <param name="inLow">
+    /// Входные минимальные цены (Low) для расчета индикатора.
+    /// </param>
+    /// <param name="inClose">
+    /// Входные цены закрытия (Close) для расчета индикатора.
+    /// </param>
     /// <param name="inRange">
     /// Диапазон обрабатываемых данных в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/> (начальный и конечный индексы).
+    /// <para>
     /// - Если не указан, обрабатывается весь массив <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>.
+    /// </para>
     /// </param>
     /// <param name="outReal">
     /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
+    /// <para>
     /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// </para>
+    /// <para>
     /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inHigh[outRange.Start + i]</c>, <c>inLow[outRange.Start + i]</c> и <c>inClose[outRange.Start + i]</c>.
+    /// </para>
     /// </param>
     /// <param name="outRange">
     /// Диапазон индексов в <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, для которых рассчитаны валидные значения:
+    /// <para>
     /// - <b>Start</b>: индекс первого элемента <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// </para>
+    /// <para>
     /// - <b>End</b>: индекс последнего элемента <paramref name="inHigh"/>, <paramref name="inLow"/> и <paramref name="inClose"/>, имеющего валидное значение в <paramref name="outReal"/>.
+    /// </para>
+    /// <para>
     /// - Гарантируется: <c>End == inHigh.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// </para>
+    /// <para>
     /// - Если данных недостаточно (например, длина <paramref name="inHigh"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
+    /// </para>
     /// </param>
     /// <typeparam name="T">
     /// Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
@@ -36,7 +56,9 @@ public static partial class Functions
     /// </typeparam>
     /// <returns>
     /// Возвращает значение <see cref="Core.RetCode"/>, указывающее на успех или неудачу вычисления.
+    /// <para>
     /// Возвращает <see cref="Core.RetCode.Success"/> при успешном вычислении или соответствующий код ошибки в противном случае.
+    /// </para>
     /// </returns>
     /// <remarks>
     /// TRANGE рассчитывает максимум из нескольких метрик диапазона, служащих фундаментальной мерой в индикаторах волатильности, таких как ATR.
@@ -94,9 +116,13 @@ public static partial class Functions
         TRangeImpl(inHigh, inLow, inClose, inRange, outReal, out outRange);
 
     /// <summary>
-    /// Возвращает период обратного просмотра для <see cref="TRange{T}">TRange</see>.
+    /// Возвращает период обратного просмотра (lookback period) для <see cref="TRange{T}">TRange</see>.
+    /// <para>
+    /// Lookback период обозначает индекс первого бара во входящих данных, для которого можно будет получить валидное значение рассчитываемого индикатора.
+    /// Все бары в исходных данных с индексом меньше чем lookback будут пропущены, чтобы посчитать первое валидное значение индикатора.
+    /// </para>
     /// </summary>
-    /// <returns>Всегда 1, так как для этого расчета требуется только один ценовой бар.</returns>
+    /// <returns>Всегда 1, так как для этого расчета требуется только один ценовой бар (предыдущий Close для сравнения с текущим High/Low).</returns>
     [PublicAPI]
     public static int TRangeLookback() => 1;
 
@@ -121,8 +147,10 @@ public static partial class Functions
         Span<T> outReal,
         out Range outRange) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация outRange - диапазон для которых рассчитаны валидные значения индикатора
         outRange = Range.EndAt(0);
 
+        // Проверка корректности входных диапазонов данных
         if (FunctionHelpers.ValidateInputRange(inRange, inHigh.Length, inLow.Length, inClose.Length) is not { } rangeIndices)
         {
             return Core.RetCode.OutOfRangeParam;
@@ -141,26 +169,31 @@ public static partial class Functions
          * Это сделано для избежания несоответствий.
          */
 
+        // Получение периода обратного просмотра (lookback) - количество баров необходимых для первого валидного значения
         var lookbackTotal = TRangeLookback();
+        // Корректировка начального индекса с учётом lookback периода
         startIdx = Math.Max(startIdx, lookbackTotal);
 
+        // Если начальный индекс больше конечного - нет данных для обработки
         if (startIdx > endIdx)
         {
             return Core.RetCode.Success;
         }
 
-        var outIdx = 0;
-        var today = startIdx;
+        var outIdx = 0;  // Индекс для записи в выходной массив
+        var today = startIdx;  // Текущий индекс бара для обработки
         while (today <= endIdx)
         {
-            var tempHT = inHigh[today]; // Временная переменная для хранения сегодняшней максимальной цены
-            var tempLT = inLow[today]; // Временная переменная для хранения сегодняшней минимальной цены
-            var tempCY = inClose[today - 1]; // Временная переменная для хранения вчерашней цены закрытия
+            var tempHT = inHigh[today];      // Временная переменная для хранения сегодняшней максимальной цены (High)
+            var tempLT = inLow[today];       // Временная переменная для хранения сегодняшней минимальной цены (Low)
+            var tempCY = inClose[today - 1]; // Временная переменная для хранения вчерашней цены закрытия (Close)
 
+            // Расчет Истинного диапазона и запись результата в выходной массив
             outReal[outIdx++] = FunctionHelpers.TrueRange(tempHT, tempLT, tempCY);
             today++;
         }
 
+        // Установка диапазона выходных данных (outRange) - индексы первой и последней ячейки с валидными значениями
         outRange = new Range(startIdx, startIdx + outIdx);
 
         return Core.RetCode.Success;
