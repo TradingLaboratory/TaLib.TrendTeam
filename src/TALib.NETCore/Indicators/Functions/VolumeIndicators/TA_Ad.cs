@@ -8,21 +8,35 @@ namespace TALib;
 public static partial class Functions
 {
     /// <summary>
-    /// Chaikin A/D Line (Volume Indicators) | Линия накопления/распределения Чайкина
+    /// _Chaikin A/D Line (Volume Indicators) — Линия накопления/распределения Чайкина (Индикаторы объема)_
     /// </summary>
-    /// <param name="inHigh">Массив входных максимальных цен.</param>
-    /// <param name="inLow">Массив входных минимальных цен.</param>
-    /// <param name="inClose">Массив входных цен закрытия.</param>
-    /// <param name="inVolume">Массив входных объемов торгов.</param>
+    /// <param name="inHigh">
+    /// Массив входных максимальных цен (High) для каждого бара.
+    /// </param>
+    /// <param name="inLow">
+    /// Массив входных минимальных цен (Low) для каждого бара.
+    /// </param>
+    /// <param name="inClose">
+    /// Массив входных цен закрытия (Close) для каждого бара.
+    /// </param>
+    /// <param name="inVolume">
+    /// Массив входных объемов торгов (Volume) для каждого бара.
+    /// </param>
     /// <param name="inRange">
     /// Диапазон обрабатываемых данных во входных массивах (начальный и конечный индексы).  
-    /// - Если не указан, обрабатываются все доступные данные.
+    /// - Если не указан, обрабатываются все доступные данные во входных массивах.
     /// </param>
-    /// <param name="outReal">Массив для сохранения рассчитанных значений индикатора.</param>
+    /// <param name="outReal">
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
+    /// - Каждый элемент <c>outReal[i]</c> соответствует данным входных массивов по индексу <c>outRange.Start + i</c>.
+    /// </param>
     /// <param name="outRange">
-    /// Диапазон индексов во входных данных, для которых получены валидные значения:  
-    /// - <b>Start</b>: индекс первого обработанного элемента.  
-    /// - <b>End</b>: индекс последнего обработанного элемента.
+    /// Диапазон индексов во входных данных, для которых рассчитаны валидные значения индикатора:  
+    /// - <b>Start</b>: индекс первого элемента входных данных, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - <b>End</b>: индекс последнего элемента входных данных, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - Гарантируется: <c>End == входной массив.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.  
+    /// - Если данных недостаточно, возвращается <c>[0, -1]</c>.
     /// </param>
     /// <typeparam name="T">
     /// Числовой тип данных (обычно <see langword="float"/> или <see langword="double"/>), 
@@ -34,7 +48,7 @@ public static partial class Functions
     /// - Код ошибки при проблемах с входными данными.
     /// </returns>
     /// <remarks>
-    /// Линия накопления/распределения Чайкина измеряет кумулятивный денежный поток в/из актива 
+    /// Линия накопления/распределения Чайкина (Chaikin A/D Line) измеряет кумулятивный денежный поток в актив или из него 
     /// через анализ цены и объема, отражая баланс спроса и предложения.
     /// <para>
     /// Может подтверждать ценовые тренды и выявлять их возможные развороты. 
@@ -45,22 +59,24 @@ public static partial class Functions
     /// <list type="number">
     ///   <item>
     ///     <description>
-    ///       Расчет множителя денежного потока (MFM) для каждого периода:
+    ///       Расчет множителя денежного потока (MFM - Money Flow Multiplier) для каждого периода:
     ///       <code>
     ///         MFM = ((Close - Low) - (High - Close)) / (High - Low)
     ///       </code>
     ///       Где:  
-    ///       - Close: цена закрытия  
-    ///       - High: максимальная цена  
-    ///       - Low: минимальная цена
+    ///       - Close: цена закрытия (Close)  
+    ///       - High: максимальная цена (High)  
+    ///       - Low: минимальная цена (Low)
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Расчет объема денежного потока (MFV):
+    ///       Расчет объема денежного потока (MFV - Money Flow Volume):
     ///       <code>
     ///         MFV = MFM * Volume
     ///       </code>
+    ///       Где:  
+    ///       - Volume: объем торгов (Volume)
     ///     </description>
     ///   </item>
     ///   <item>
@@ -106,12 +122,15 @@ public static partial class Functions
     /// <summary>
     /// Возвращает lookback-период для <see cref="Ad{T}"/>.
     /// </summary>
-    /// <returns>Всегда 0, так как для расчета не требуется исторических данных.</returns>
+    /// <returns>
+    /// Всегда 0, так как для расчета не требуется исторических данных. 
+    /// Валидное значение индикатора может быть рассчитано начиная с первого бара (индекс 0).
+    /// </returns>
     [PublicAPI]
     public static int AdLookback() => 0;
 
     /// <remarks>
-    /// Реализация для совместимости с абстрактным API
+    /// Реализация для совместимости с абстрактным API (работа с массивами вместо Span).
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode Ad<T>(
@@ -133,31 +152,42 @@ public static partial class Functions
         Span<T> outReal,
         out Range outRange) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация выходного диапазона пустым значением (конец на 0)
         outRange = Range.EndAt(0);
 
-        // Проверка валидности входных диапазонов
+        // Проверка валидности входных диапазонов и длин массивов
         if (FunctionHelpers.ValidateInputRange(inRange, inHigh.Length, inLow.Length, inClose.Length, inVolume.Length) is not
             { } rangeIndices)
         {
             return Core.RetCode.OutOfRangeParam;
         }
 
-        var (startIdx, endIdx) = rangeIndices; // Начальный и конечный индексы для обработки
-        var nbBar = endIdx - startIdx + 1; // Количество обрабатываемых баров
-        outRange = new Range(startIdx, startIdx + nbBar); // Диапазон выходных данных
+        // Начальный и конечный индексы для обработки данных
+        var (startIdx, endIdx) = rangeIndices;
+        // Количество обрабатываемых баров в заданном диапазоне
+        var nbBar = endIdx - startIdx + 1;
+        // Установка диапазона выходных данных (валидные значения начинаются с startIdx)
+        outRange = new Range(startIdx, startIdx + nbBar);
 
-        var currentBar = startIdx; // Текущий индекс обрабатываемого бара
-        var outIdx = 0; // Индекс для записи результатов в outReal
-        var ad = T.Zero; // Текущее значение линии накопления/распределения
+        // Текущий индекс обрабатываемого бара во входных данных
+        var currentBar = startIdx;
+        // Индекс для записи результатов в выходной массив outReal
+        var outIdx = 0;
+        // Текущее накопленное значение линии накопления/распределения (A/D)
+        var ad = T.Zero;
 
+        // Цикл обработки каждого бара в заданном диапазоне
         while (nbBar != 0)
         {
-            // Расчет накопленного значения A/D
+            // Расчет накопленного значения A/D для текущего бара
             ad = FunctionHelpers.CalcAccumulationDistribution(inHigh, inLow, inClose, inVolume, ref currentBar, ad);
+            // Запись рассчитанного значения в выходной массив
             outReal[outIdx++] = ad;
+            // Уменьшение счетчика оставшихся баров
             nbBar--;
         }
 
+        // Возврат кода успешного завершения операции
         return Core.RetCode.Success;
     }
 }
