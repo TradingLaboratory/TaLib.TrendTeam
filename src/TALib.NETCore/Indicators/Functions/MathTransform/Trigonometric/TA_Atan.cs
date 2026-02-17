@@ -1,8 +1,8 @@
 //Название файла: TA_Atan.cs
 //Группы к которым можно отнести индикатор:
 //MathTransform (существующая папка - идеальное соответствие категории)
-//TrigonometricFunctions (альтернатива, если требуется группировка по типу функции)
-//AdvancedMathModels (альтернатива для акцента на сложных математических моделях)
+//StatisticFunctions (альтернатива, если требуется группировка по математическим функциям)
+//Trigonometric (предложение для новой подпапки внутри MathTransform)
 
 namespace TALib;
 
@@ -13,19 +13,19 @@ public static partial class Functions
     /// </summary>
     /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
     /// <param name="inRange">
-    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).  
     /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
     /// </param>
     /// <param name="outReal">
-    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
-    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
     /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
     /// </param>
     /// <param name="outRange">
-    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
-    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
-    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
-    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:  
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.  
     /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
     /// </param>
     /// <typeparam name="T">
@@ -53,9 +53,12 @@ public static partial class Functions
         AtanImpl(inReal, inRange, outReal, out outRange);
 
     /// <summary>
-    /// Возвращает период обратного просмотра для <see cref="Atan{T}">Atan</see>.
+    /// Возвращает период обратного просмотра (lookback) для <see cref="Atan{T}">Atan</see>.
     /// </summary>
-    /// <returns>Всегда 0, так как для этого расчета не требуется исторических данных.</returns>
+    /// <returns>
+    /// Всегда 0, так как для расчета арктангенса не требуется исторических данных.
+    /// Валидное значение индикатора доступно уже для первого бара входных данных (индекс 0).
+    /// </returns>
     [PublicAPI]
     public static int AtanLookback() => 0;
 
@@ -76,6 +79,7 @@ public static partial class Functions
         Span<T> outReal,
         out Range outRange) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация диапазона вывода пустым диапазоном (конец в 0)
         outRange = Range.EndAt(0);
 
         // Проверка корректности диапазона входных данных
@@ -84,8 +88,10 @@ public static partial class Functions
             return Core.RetCode.OutOfRangeParam;
         }
 
+        // Получение начального и конечного индексов для обработки
         var (startIdx, endIdx) = rangeIndices;
 
+        // Индекс для записи в выходной массив
         var outIdx = 0;
         for (var i = startIdx; i <= endIdx; i++)
         {
@@ -94,6 +100,8 @@ public static partial class Functions
         }
 
         // Установка диапазона валидных значений
+        // Start: индекс первого валидного элемента (startIdx)
+        // End: индекс элемента после последнего валидного (startIdx + outIdx)
         outRange = new Range(startIdx, startIdx + outIdx);
 
         return Core.RetCode.Success;

@@ -2,7 +2,7 @@
 //Группы к которым можно отнести индикатор:
 //MathTransform (существующая папка - идеальное соответствие категории)
 //MathOperators (альтернатива, если требуется группировка по типу математических операций)
-//TrigonometricFunctions (альтернатива для акцента на тригонометрических функциях)
+//PriceTransform (альтернатива для акцента на преобразовании данных)
 
 namespace TALib;
 
@@ -17,19 +17,19 @@ public static partial class Functions
     /// </typeparam>
     /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
     /// <param name="inRange">
-    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).  
     /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
     /// </param>
     /// <param name="outReal">
-    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
-    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
     /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
     /// </param>
     /// <param name="outRange">
-    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
-    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
-    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
-    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:  
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.  
     /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
     /// </param>
     /// <returns>
@@ -76,6 +76,7 @@ public static partial class Functions
         Span<T> outReal,
         out Range outRange) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация диапазона выходных данных пустым значением по умолчанию
         outRange = Range.EndAt(0);
 
         // Проверка корректности диапазона входных данных
@@ -84,15 +85,19 @@ public static partial class Functions
             return Core.RetCode.OutOfRangeParam;
         }
 
+        // Извлечение начального и конечного индексов для обработки
         var (startIdx, endIdx) = rangeIndices;
 
+        // Индекс для записи результатов в выходной массив
         var outIdx = 0;
+
         // Применение гиперболической косинусной функции к каждому элементу в указанном диапазоне
         for (var i = startIdx; i <= endIdx; i++)
         {
             outReal[outIdx++] = T.Cosh(inReal[i]);
         }
 
+        // Установка диапазона валидных выходных данных на основе обработанных элементов
         outRange = new Range(startIdx, startIdx + outIdx);
 
         return Core.RetCode.Success;
