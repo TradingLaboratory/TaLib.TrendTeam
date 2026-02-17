@@ -1,8 +1,8 @@
 //Название файла: TA_LinearRegIntercept.cs
 //Группы к которым можно отнести индикатор:
 //StatisticFunctions (существующая папка - идеальное соответствие категории)
-//TrendAnalysis (альтернатива, если требуется группировка по типу анализа)
-//RegressionMetrics (альтернатива для акцента на регрессионных метриках)
+//OverlapStudies (альтернатива, если требуется группировка по типу наложения на график)
+//TrendAnalysis (альтернатива для акцента на анализе тренда)
 
 namespace TALib;
 
@@ -13,22 +13,22 @@ public static partial class Functions
     /// </summary>
     /// <param name="inReal">Входные данные для расчета индикатора (цены, другие индикаторы или другие временные ряды)</param>
     /// <param name="inRange">
-    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).
+    /// Диапазон обрабатываемых данных в <paramref name="inReal"/> (начальный и конечный индексы).  
     /// - Если не указан, обрабатывается весь массив <paramref name="inReal"/>.
     /// </param>
     /// <param name="outReal">
-    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.
-    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).
+    /// Массив, содержащий ТОЛЬКО валидные значения индикатора.  
+    /// - Длина массива равна <c>outRange.End - outRange.Start + 1</c> (если <c>outRange</c> корректен).  
     /// - Каждый элемент <c>outReal[i]</c> соответствует <c>inReal[outRange.Start + i]</c>.
     /// </param>
     /// <param name="outRange">
-    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:
-    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
-    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.
-    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.
+    /// Диапазон индексов в <paramref name="inReal"/>, для которых рассчитаны валидные значения:  
+    /// - <b>Start</b>: индекс первого элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - <b>End</b>: индекс последнего элемента <paramref name="inReal"/>, имеющего валидное значение в <paramref name="outReal"/>.  
+    /// - Гарантируется: <c>End == inReal.GetUpperBound(0)</c> (последний элемент входных данных), если расчет успешен.  
     /// - Если данных недостаточно (например, длина <paramref name="inReal"/> меньше периода индикатора), возвращается <c>[0, -1]</c>.
     /// </param>
-    /// <param name="optInTimePeriod">Период времени.</param>
+    /// <param name="optInTimePeriod">Период времени (Time Period) для расчета регрессии.</param>
     /// <typeparam name="T">
     /// Числовой тип данных, обычно <see langword="float"/> или <see langword="double"/>,
     /// реализующий интерфейс <see cref="IFloatingPointIeee754{T}"/>.
@@ -38,11 +38,11 @@ public static partial class Functions
     /// Возвращает <see cref="Core.RetCode.Success"/> при успешном вычислении, или соответствующий код ошибки в противном случае.
     /// </returns>
     /// <remarks>
-    /// Линейная регрессия пересечения вычисляет точку пересечения y линии наилучшего подхода для серии данных
-    /// за указанный период. Она представляет собой значение линии, когда значение x (индекс) равно нулю, предоставляя информацию
+    /// Линейная регрессия пересечения вычисляет точку пересечения оси Y линии наилучшего приближения для серии данных
+    /// за указанный период. Она представляет собой значение линии, когда значение X (индекс) равно нулю, предоставляя информацию
     /// о базовом уровне данных.
     /// <para>
-    /// Её можно использовать в сочетании с наклоном для лучшего понимания характеристик тренда данных.
+    /// Её можно использовать в сочетании с наклоном (Slope) для лучшего понимания характеристик тренда данных.
     /// Функция может служить ориентиром. Комбинирование её с другими метриками на основе регрессии или ценовыми паттернами
     /// может дать более глубокие инсайты.
     /// </para>
@@ -66,7 +66,7 @@ public static partial class Functions
     ///   </item>
     ///   <item>
     ///     <description>
-    ///       Вычислить точку пересечения y (b) линии регрессии по формуле:
+    ///       Вычислить точку пересечения Y (b) линии регрессии по формуле:
     ///       <code>
     ///         b = (Sum(Y) - m * Sum(X)) / n
     ///       </code>
@@ -79,7 +79,7 @@ public static partial class Functions
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///       Точка пересечения y указывает на начальный уровень серии данных относительно линии регрессии.
+    ///       Точка пересечения Y указывает на начальный уровень серии данных относительно линии регрессии.
     ///     </description>
     ///   </item>
     ///   <item>
@@ -99,15 +99,15 @@ public static partial class Functions
         LinearRegInterceptImpl(inReal, inRange, outReal, out outRange, optInTimePeriod);
 
     /// <summary>
-    /// Возвращает период обратного просмотра для <see cref="LinearRegIntercept{T}">LinearRegIntercept</see>.
+    /// Возвращает период обратного просмотра (Lookback Period) для <see cref="LinearRegIntercept{T}">LinearRegIntercept</see>.
     /// </summary>
-    /// <param name="optInTimePeriod">Период времени.</param>
-    /// <returns>Количество периодов, необходимых до первого вычисленного значения.</returns>
+    /// <param name="optInTimePeriod">Период времени (Time Period).</param>
+    /// <returns>Количество периодов, необходимых до первого вычисленного значения (индекс первого валидного бара).</returns>
     [PublicAPI]
     public static int LinearRegInterceptLookback(int optInTimePeriod = 14) => optInTimePeriod < 2 ? -1 : optInTimePeriod - 1;
 
     /// <remarks>
-    /// Для совместимости с абстрактным API
+    /// Для совместимости с абстрактным API (Abstract API).
     /// </remarks>
     [UsedImplicitly]
     private static Core.RetCode LinearRegIntercept<T>(
@@ -125,60 +125,75 @@ public static partial class Functions
         out Range outRange,
         int optInTimePeriod) where T : IFloatingPointIeee754<T>
     {
+        // Инициализация выходного диапазона пустым значением
         outRange = Range.EndAt(0);
 
+        // Проверка корректности входного диапазона данных
         if (FunctionHelpers.ValidateInputRange(inRange, inReal.Length) is not { } rangeIndices)
         {
             return Core.RetCode.OutOfRangeParam;
         }
 
+        // Извлечение начального и конечного индексов диапазона
         var (startIdx, endIdx) = rangeIndices;
 
+        // Проверка валидности периода времени (должен быть больше 1)
         if (optInTimePeriod < 2)
         {
             return Core.RetCode.BadParam;
         }
 
-        /* Линейная регрессия — это концепция, также известная как "метод наименьших квадратов" или "наилучшая подгонка."
+        /* Линейная регрессия — это концепция, также известная как "метод наименьших квадратов" или "наилучшая подгонка".
          * Линейная регрессия пытается подогнать прямую линию между несколькими точками данных таким образом, чтобы
          * расстояние между каждой точкой данных и линией было минимальным.
          *
          * Для каждой точки прямая линия за предыдущий период баров определяется в терминах y = b + m * x:
          *
-         * Возвращает 'b'
+         * Возвращает 'b' (точку пересечения)
          */
 
+        // Общее количество периодов обратного просмотра (lookback) для получения первого валидного значения
         var lookbackTotal = LinearRegInterceptLookback(optInTimePeriod);
+        // Корректировка начального индекса с учётом lookback (пропуск баров, для которых нельзя рассчитать значение)
         startIdx = Math.Max(startIdx, lookbackTotal);
 
+        // Если начальный индекс больше конечного, валидных данных для расчета нет
         if (startIdx > endIdx)
         {
             return Core.RetCode.Success;
         }
 
-        var outIdx = 0;
-        var today = startIdx;
+        var outIdx = 0; // Индекс для записи в выходной массив outReal
+        var today = startIdx; // Текущий индекс обрабатываемого бара во входных данных
 
+        // Период времени в типе данных T
         var timePeriod = T.CreateChecked(optInTimePeriod);
+        // Сумма индексов X (0 + 1 + ... + n-1). Формула: n * (n-1) / 2
         var sumX = T.CreateChecked(optInTimePeriod * (optInTimePeriod - 1) * 0.5);
+        // Сумма квадратов индексов X (0^2 + 1^2 + ... + (n-1)^2). Формула: n * (n-1) * (2n-1) / 6
         var sumXSqr = T.CreateChecked(optInTimePeriod * (optInTimePeriod - 1) * (optInTimePeriod * 2 - 1) / 6.0);
+        // Знаменатель для расчета наклона (фиксирован для постоянного периода)
         var divisor = sumX * sumX - timePeriod * sumXSqr;
         while (today <= endIdx)
         {
-            var sumXY = T.Zero;
-            var sumY = T.Zero;
+            var sumXY = T.Zero; // Сумма произведений X и Y для текущего окна
+            var sumY = T.Zero;  // Сумма значений Y (цен) для текущего окна
             for (var i = optInTimePeriod; i-- != 0;)
             {
+                // Значение цены на шаге i относительно текущего бара
                 var tempValue1 = inReal[today - i];
                 sumY += tempValue1;
                 sumXY += T.CreateChecked(i) * tempValue1;
             }
 
+            // Расчет наклона (slope) линии регрессии
             var m = (timePeriod * sumXY - sumX * sumY) / divisor;
+            // Расчет точки пересечения (intercept) и запись в выходной массив
             outReal[outIdx++] = (sumY - m * sumX) / timePeriod;
             today++;
         }
 
+        // Установка диапазона valid данных для выходных данных (индексы во входном массиве)
         outRange = new Range(startIdx, startIdx + outIdx);
 
         return Core.RetCode.Success;
